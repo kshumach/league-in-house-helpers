@@ -2,3 +2,5 @@ lib/
 bin/
 .idea
 pyvenv.cfg
+Include
+Scripts
