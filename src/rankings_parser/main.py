@@ -16,7 +16,7 @@ Script to calculate average scores for each player based off a csv of ratings pr
 
 Use like so on a command line interface
 
-> python src/main.py --file /path/to/csv/file --ordered
+> python src/rankings_parser/main.py --file /path/to/csv/file --ordered
 """
 @click.command()
 @click.option('--file', type=click.File(), help="CSV file of rankings.", required=True)
