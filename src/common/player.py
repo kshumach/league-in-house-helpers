@@ -6,6 +6,9 @@ from dataclasses import dataclass, field
 class Player:
     name: str = ""
     ratings: list = field(default_factory=list)
+    pref1: str = ""
+    pref2: str = ""
+    pref3: str = ""
 
     def average_rating(self):
         if len(self.ratings) == 0:
