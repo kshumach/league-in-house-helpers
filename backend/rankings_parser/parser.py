@@ -1,17 +1,8 @@
 import csv
 
-from src.common.player import Player
+from backend.common import Player
 
-
-RANKING_WEIGHT = {
-    "S": 9,
-    "A": 7,
-    "B": 5,
-    "C": 3,
-    "D": 1,
-    "N/A (Haven't played with them enough)": None,
-    "": None
-}
+RANKING_WEIGHT = {"S": 9, "A": 7, "B": 5, "C": 3, "D": 1, "N/A (Haven't played with them enough)": None, "": None}
 
 
 def parse_rankings(file, order=False):

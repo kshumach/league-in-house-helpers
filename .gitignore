@@ -4,3 +4,5 @@ bin/
 pyvenv.cfg
 Include
 Scripts
+__pycache__
+.pyc

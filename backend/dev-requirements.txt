@@ -1,0 +1,4 @@
+black @ git+git://github.com/psf/black@692c0f50d91e3163bb87401e4a0e070b2eb5b163
+isort==5.7.0
+
+-r requirements.txt
