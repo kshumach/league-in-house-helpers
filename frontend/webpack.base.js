@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { EnvironmentPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 
 module.exports = {
   entry: {
-    app: './src/index.jsx',
+    app: './src/index.tsx',
   },
   output: {
     filename: '[name].[contenthash].bundle.js',
@@ -15,7 +17,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.m?(js|jsx)$/,
+        test: /\.(js|jsx)$/,
         include: /src/,
         exclude: /node_modules/,
         use: {
@@ -25,12 +27,20 @@ module.exports = {
           },
         },
       },
+      {
+        test: /\.(ts|tsx)?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      }
     ],
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', 'jsx'],
   },
   plugins: [
     new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
     new WebpackManifestPlugin(),
-    new HtmlWebpackPlugin({ title: 'In Houses UI', template: path.resolve(__dirname, 'src/index.html') }),
+    new HtmlWebpackPlugin({ title: 'In Houses UI', template: path.resolve(__dirname, 'src/index.html') })
   ],
   optimization: {
     runtimeChunk: 'single',

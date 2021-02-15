@@ -1,10 +1,12 @@
+from typing import Optional, Any, Dict
+
 from django.db.utils import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
 
-def custom_exception_handler(ex, context):
+def custom_exception_handler(ex: Exception, context: Any) -> Optional[Response]:
     response = exception_handler(ex, context)
 
     if isinstance(ex, IntegrityError):
@@ -16,7 +18,7 @@ def custom_exception_handler(ex, context):
     return response
 
 
-def _update_response(response, status_code, data):
+def _update_response(response: Response, status_code: int, data: Dict[str, str]) -> Optional[Response]:
     if response is None:
         return Response(status=status_code, data=data)
     else:

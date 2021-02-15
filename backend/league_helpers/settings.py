@@ -12,12 +12,15 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 import os
 from pathlib import Path
+from typing import Optional, Any
 
 import dotenv
 from django.core.exceptions import ImproperlyConfigured
 
+from datetime import timedelta
 
-def get_from_env(key, default=None, raise_on_missing=False, lower_case=False):
+
+def get_from_env(key: str, default=None, raise_on_missing=False, lower_case=False) -> str:
     val = os.getenv(key, default)
 
     if raise_on_missing and val is None:
@@ -40,12 +43,19 @@ if os.path.exists(DOTENV_PATH):
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_from_env("SECRET_KEY", raise_on_missing=True)
 
+ENV = get_from_env("ENV", default="development", lower_case=True)
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True if get_from_env("ENV", default="development", lower_case=True) == "development" else False
+DEBUG = True if ENV == "development" else False
 
 ALLOWED_HOSTS = []
 
-# Application definition
+
+def production_domain() -> str:
+    return get_from_env("PRODUCTION_DOMAIN", None, raise_on_missing=True)
+
+
+# ========== Application definition ==========
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -54,6 +64,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_extensions",
+    "rest_framework",
+    "corsheaders",
+    # TODO: Setup cron to run flush
+    "rest_framework_simplejwt.token_blacklist",
     "api",
     "users",
 ]
@@ -61,6 +76,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -88,8 +104,46 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "league_helpers.wsgi.application"
 
+AUTH_USER_MODEL = "users.User"
 
-# Database
+# ========== Logging ==========
+# https://docs.djangoproject.com/en/3.1/topics/logging/
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "root": {
+        "level": "DEBUG",
+        "handlers": [
+            "console",
+        ],
+    },
+    "formatters": {
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+        "verbose": {
+            "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django.db.backends": {
+            "level": "DEBUG",
+            "formatter": "simple",
+            "propagate": True,
+        },
+    },
+}
+
+# ========== Database ==========
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
@@ -103,8 +157,7 @@ DATABASES = {
     }
 }
 
-
-# Password validation
+# ========== Password validation ==========
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -122,8 +175,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
+# ========== Internationalization ==========
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
@@ -136,13 +188,12 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
+# ========== Static files (CSS, JavaScript, Images) ==========
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = "/static/"
 
-AUTH_USER_MODEL = "users.User"
+# ========== Django Rest Framework ==========
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -155,3 +206,24 @@ REST_FRAMEWORK = {
     ],
     "EXCEPTION_HANDLER": "api.utils.custom_exception_handler",
 }
+
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=6),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": False,
+    "USER_ID_FIELD": "username",
+    "USER_ID_CLAIM": "user_id",
+}
+
+# ========== Django CORS ==========
+# https://github.com/adamchainz/django-cors-headers#configuration
+
+DEV_DOMAINS = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]
+
+CORS_ALLOWED_ORIGINS = DEV_DOMAINS if ENV == "development" else production_domain()
