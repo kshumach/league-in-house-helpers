@@ -1,0 +1,13 @@
+Trying to satisfy people's primary roles while also maintaining team balance.
+teamBuilder's main.py will do this by making sure at least 2 randomly selected players get their main role in each team.
+
+Then when team.roles_filled() = 3 for each team:
+The program will then prioritize putting in players as long as teamBalance(currently a diff of 4 total Rating) is satisfied
+
+    will first only try up to 2nd roles
+    then when loop counter reaches a certain amount we'll try with 3rd roles
+    
+    
+#to investigate: is it better to just compare difference between teams SUM of ratings? Or 1 team's avg vs the other's?
+#to add later: 0.9*rating for 2nd place, 0.8*3rd place
+#to fix later: error-finder function of are_roles_filled in parser.py doesn't work

@@ -5,10 +5,10 @@ from dataclasses import dataclass, field
 @dataclass
 class Player:
     name: str = ""
-    ratings: list = field(default_factory=list)
     pref1: str = ""
     pref2: str = ""
     pref3: str = ""
+    ratings: list = field(default_factory=list)
 
     def average_rating(self):
         if len(self.ratings) == 0:
@@ -34,8 +34,11 @@ class Player:
     def __lt__(self, other):
         return self.average_rating_within_std_dev() < other.average_rating_within_std_dev()
 
-    def __repr__(self):
+    def __str__(self):
         name = f"{self.name}: "
+        pref1 = f"pref1 = {self.pref1}. "
+        pref2 = f"pref2 = {self.pref2}. "
+        pref3 = f"pref3 = {self.pref3}. "
         avg = f"avg={self.average_rating()}. "
         std_dev = f"std_dev={self.std_dev()}. "
         avg_with_std_dev = f"avg_with_std_dev: {self.average_rating_within_std_dev()}. "
