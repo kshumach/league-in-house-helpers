@@ -1,6 +1,7 @@
 import React, { ErrorInfo, ReactElement } from "react";
 import { InspectableObject, Nullable } from "../utils/types";
-import { ApiError } from '../utils/errors';
+import { LoginRequiredError } from '../utils/errors';
+import { Redirect } from 'react-router-dom';
 
 type ErrorBoundaryState = {
   hasError: boolean,
@@ -28,12 +29,8 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
   }
 
   componentDidCatch(errorObj: Error, errorInfo: ErrorInfo): void {
-    if (errorObj instanceof ApiError) {
-      console.error(errorObj.error, errorInfo);
-    } else {
-      // You can also log the error to an error reporting service
-      console.error(errorObj, errorInfo);
-    }
+    // You can also log the error to an error reporting service
+    console.error(errorObj, errorInfo);
   }
 
   render(): ReactElement {

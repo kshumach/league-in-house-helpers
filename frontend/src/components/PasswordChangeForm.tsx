@@ -1,0 +1,179 @@
+import React, { ChangeEvent, ReactElement, useState } from 'react';
+import {
+  Button,
+  CircularProgress, Container,
+  FormControl,
+  FormHelperText,
+  Grid,
+  makeStyles,
+  TextField, Theme,
+  Tooltip,
+} from '@material-ui/core';
+import { AxiosError } from 'axios';
+import { Left, Nullable } from '../utils/types';
+import makeApiRequest, { RequestMethods } from '../utils/apiClient';
+
+const useStyles = makeStyles(({ spacing }: Theme) => ({
+  contentWrapper: {
+    marginTop: spacing(8),
+  },
+  form: {
+    width: '100%',
+    marginTop: spacing(2),
+  },
+  formItem: {
+    width: '100%',
+    marginTop: spacing(2),
+  },
+  formControl: {
+    width: '100%',
+  },
+  submit: {
+    margin: spacing(2, 0),
+  },
+  formErrorText: {
+    marginTop: spacing(2),
+  }
+}));
+
+export default function PasswordChangeForm(): ReactElement {
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [formError, setFormError] = useState<Nullable<string>>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const classes = useStyles();
+
+  const submitDisabled = (newPassword !== passwordConfirmation) || newPassword.length < 9;
+
+  const onNewPasswordChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (formError) setFormError(null);
+
+    setNewPassword(event.target.value);
+  };
+
+  const onPasswordConfirmationChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (formError) setFormError(null);
+
+    setPasswordConfirmation(event.target.value);
+  };
+
+  const onSubmit = async (event: { preventDefault: () => void }): Promise<void> => {
+    event.preventDefault();
+
+    setIsLoading(true);
+
+    const response = await makeApiRequest<string>(RequestMethods.POST, 'users/change_password', {
+      password: newPassword,
+      password_confirmation: passwordConfirmation,
+    }, {});
+
+    if (response instanceof Left) {
+      const error = response.unsafeUnwrap();
+
+      if ((error as AxiosError).isAxiosError) {
+        setFormError('Failed to change password.');
+      } else {
+        // Something else, job for the ErrorBoundary.
+        throw error;
+      }
+    } else {
+      // Show toast
+      return;
+    }
+
+    setIsLoading(false);
+  };
+
+  const renderSubmitButton = () => {
+    if (isLoading) {
+      return (
+        <Grid container justify="center">
+          <CircularProgress className={classes.submit} />
+        </Grid>
+      );
+    }
+
+    if (submitDisabled) {
+      const tooltipTitle = 'Passwords must match, and me at least 9 characters long.'
+
+      return (
+        <Tooltip arrow title={tooltipTitle}>
+          <span>
+            <Button
+              disabled
+              fullWidth
+              className={classes.submit}
+              color="primary"
+              type="submit"
+              variant="contained"
+              onClick={onSubmit}
+            >
+              Log In
+            </Button>
+          </span>
+        </Tooltip>
+      )
+    }
+
+    return (
+      <Button
+        fullWidth
+        className={classes.submit}
+        color="primary"
+        type="submit"
+        variant="contained"
+        onClick={onSubmit}
+      >
+        Submit
+      </Button>
+    )
+  }
+
+  return (
+    <Container className={classes.contentWrapper} maxWidth="xs">
+      <form noValidate className={classes.form}>
+        <Grid container alignItems="center" direction="column">
+          <Grid item className={classes.formItem} xs={12}>
+            <FormControl className={classes.formControl}>
+              <TextField
+                autoFocus
+                required
+                aria-describedby="new-password-help-text"
+                error={!!formError}
+                id="new-password"
+                label="New Password"
+                type="password"
+                value={newPassword}
+                variant="outlined"
+                onChange={onNewPasswordChange}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item className={classes.formItem} xs={12}>
+            <FormControl className={classes.formControl}>
+              <TextField
+                required
+                aria-describedby="password-confirm-help-text"
+                error={!!formError}
+                id="password-confirm"
+                label="Confirm Password"
+                type="password"
+                value={passwordConfirmation}
+                variant="outlined"
+                onChange={onPasswordConfirmationChange}
+              />
+            </FormControl>
+          </Grid>
+        </Grid>
+        {
+          (!!formError) && (
+            <FormHelperText className={classes.formErrorText}>
+              {formError}
+            </FormHelperText>
+          )
+        }
+        {renderSubmitButton()}
+      </form>
+    </Container>
+  )
+}

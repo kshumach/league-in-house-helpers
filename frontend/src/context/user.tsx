@@ -5,12 +5,11 @@ import { Redirect, useLocation } from 'react-router-dom';
 import { CustomJwtPayload, Nullable, Optional } from '../utils/types';
 import { GenericContextConsumer, useGenericContextHelper } from "../utils/context-helpers";
 import { refreshAccessToken } from '../utils/apiClient';
-import { ApiError } from '../utils/errors';
 import { hasStoredTokenPair, Left } from '../utils/general';
 
 export interface UserCtx {
   username: Nullable<string>;
-  userError: Nullable<ApiError>;
+  userError: Nullable<Error>;
   isFetchingUser: boolean;
 }
 
@@ -26,7 +25,7 @@ const UserContext = React.createContext<UserContextType>(undefined);
 function UserContextProvider({ children, handleErrors }: UserContextProps): Nullable<ReactElement> {
   const location = useLocation();
   const [loginRequired, setLoginRequired] = useState(false);
-  const [error, setError] = useState<Nullable<ApiError>>(null);
+  const [error, setError] = useState<Nullable<Error>>(null);
   const [username, setUsername] = useState<Nullable<string>>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
 

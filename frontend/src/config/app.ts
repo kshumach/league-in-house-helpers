@@ -1,4 +1,5 @@
 const LOCALHOST = 'http://localhost';
+// TODO: Figure this out
 // const { API_HOST = '', ENV = 'development' } = process.env;
 
 export interface AppConfig {

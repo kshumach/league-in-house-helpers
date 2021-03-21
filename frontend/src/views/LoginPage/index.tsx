@@ -11,9 +11,9 @@ import {
   Typography,
 } from '@material-ui/core';
 import makeApiRequest, { RequestMethods } from '../../utils/apiClient';
-import { Nullable } from '../../utils/types';
+import { Left, Nullable } from '../../utils/types';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
-import { Left, storeTokenPair } from '../../utils/general';
+import { storeTokenPair } from '../../utils/general';
 import { AxiosError } from 'axios';
 
 interface LoginSuccessPayload {
@@ -77,13 +77,13 @@ export default function LoginPage(): ReactElement {
 
     setIsLoading(true);
 
-    const response = await makeApiRequest<LoginSuccessPayload>(RequestMethods.POST, 'token', {
+    const response = await makeApiRequest<LoginSuccessPayload>(RequestMethods.POST, 'users/login', {
       username,
       password,
-    });
+    }, {}, { withAuthHeader: false });
 
     if (response instanceof Left) {
-      const { error } = response.unsafeUnwrap();
+      const error = response.unsafeUnwrap();
 
       if ((error as AxiosError).isAxiosError) {
         setFormError('Invalid username and password combination.');

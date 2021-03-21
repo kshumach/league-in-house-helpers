@@ -14,8 +14,8 @@ import {
 import { AxiosError } from 'axios';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import makeApiRequest, { RequestMethods } from '../../utils/apiClient';
-import { Nullable } from '../../utils/types';
-import { camelizeKeys, Left, reduceErrors, storeTokenPair } from '../../utils/general';
+import { Left, Nullable } from '../../utils/types';
+import { camelizeKeys, reduceErrors, storeTokenPair } from '../../utils/general';
 
 interface CreateUserSuccessPayload {
   token: {
@@ -133,10 +133,10 @@ export default function RegisterPage(): ReactElement {
       registration_token: registrationToken,
       username,
       password,
-    });
+    }, {}, { withAuthHeader: false });
 
     if (response instanceof Left) {
-      const { error } = response.unsafeUnwrap();
+      const error = response.unsafeUnwrap();
 
       console.error(error);
 

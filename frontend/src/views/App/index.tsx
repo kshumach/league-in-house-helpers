@@ -9,6 +9,9 @@ import { UserContextProvider } from '../../context/user';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import RedirectIfLoggedIn from '../../components/guards/RedirectIfLoggedIn';
 import LoginPage from '../LoginPage';
+import NavBar from '../../components/NavBar';
+import ErrorHandler from '../../components/ErrorHandler';
+import { NoRouteMatchError } from '../../utils/errors';
 
 export default function App(): ReactElement {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -39,10 +42,22 @@ export default function App(): ReactElement {
                 <LoginPage />
               </RedirectIfLoggedIn>
             </Route>
-            <Route path="/">
+            <Route exact path="/">
               <UserContextProvider handleErrors>
-                <HomePage />
+                <NavBar>
+                  <HomePage />
+                </NavBar>
               </UserContextProvider>
+            </Route>
+            <Route exact path="/settings">
+              <UserContextProvider handleErrors>
+                <NavBar>
+                  <div>Settings</div>
+                </NavBar>
+              </UserContextProvider>
+            </Route>
+            <Route path="*">
+              <ErrorHandler error={new NoRouteMatchError()} />
             </Route>
           </Switch>
         </BrowserRouter>

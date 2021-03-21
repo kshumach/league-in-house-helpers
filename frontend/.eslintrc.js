@@ -6,8 +6,8 @@ module.exports = {
     node: true,
   },
   extends: [
-    'plugin:react/recommended',
     'airbnb',
+    'plugin:react/recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
     'plugin:@typescript-eslint/recommended',
@@ -16,6 +16,7 @@ module.exports = {
     'plugin:import/typescript',
     'prettier',
     'prettier/react',
+    "prettier/@typescript-eslint",
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -28,7 +29,8 @@ module.exports = {
   rules: {
     'max-len': ['error', { code: 119 }],
     'react/jsx-filename-extension': ['error', { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
-    "react/jsx-fragments": ['warn', 'element'],
+    'react/jsx-fragments': ['warn', 'element'],
+    'react/jsx-max-props-per-line': ['error', { maximum: 3 }],
     // note you must disable the base rule as it can report incorrect errors
     'no-use-before-define': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
@@ -44,13 +46,16 @@ module.exports = {
         tsx: 'never',
       },
     ],
-    "react/jsx-sort-props": ['error', {
-      "callbacksLast": true,
-      "shorthandFirst": true,
-      "shorthandLast": false,
-      "ignoreCase": true,
-      "noSortAlphabetically": false,
-      "reservedFirst": ['key', 'ref'],
-      }]
+    'react/jsx-sort-props': [
+      'error',
+      {
+        callbacksLast: true,
+        shorthandFirst: true,
+        shorthandLast: false,
+        ignoreCase: true,
+        noSortAlphabetically: false,
+        reservedFirst: ['key', 'ref'],
+      },
+    ],
   },
 };

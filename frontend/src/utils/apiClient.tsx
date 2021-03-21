@@ -1,9 +1,9 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { useEffect, useState } from 'react';
 import appConfig from '../config/app';
-import { InspectableObject, Nullable} from './types';
-import { ApiError } from './errors';
-import { Either, Left, left, right, storeTokenPair } from './general';
+import { ApiMethodReturnValue, InspectableObject, Left, Nullable } from './types';
+import { left, right, storeTokenPair } from './general';
+import { LoginRequiredError } from './errors';
 
 export const enum RequestMethods {
   GET = 'GET',
@@ -18,17 +18,13 @@ export interface ApiClientOptions extends AxiosRequestConfig {
   headers?: InspectableObject;
 }
 
-export type SetStateCallback<R> = (response: R) => void;
-
-export class LoginRequiredError extends Error {}
-
 function applyAuthHeader(requestOptions: AxiosRequestConfig): AxiosRequestConfig {
   if (requestOptions.headers) {
     return {
       ...requestOptions,
       headers: {
         ...requestOptions.headers,
-        Authorization: `Bearer: ${localStorage.getItem('access_token')}`,
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
     };
   }
@@ -36,21 +32,26 @@ function applyAuthHeader(requestOptions: AxiosRequestConfig): AxiosRequestConfig
   return {
     ...requestOptions,
     headers: {
-      Authorization: `Bearer: ${localStorage.getItem('access_token')}`,
+      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
     },
   };
 }
 
 type RefreshTokenPayload = { access: string; refresh: string };
 
-export async function refreshAccessToken(): Promise<Either<NonNullable<RefreshTokenPayload>, ApiError>> {
+/**
+ * Requests a new access_token with the refresh_token stored in localStorage.
+ *
+ * If the refresh_token does not exist in localStorage or the request returns a 401, returns a LoginRequiredError
+ */
+export async function refreshAccessToken(): Promise<ApiMethodReturnValue<NonNullable<RefreshTokenPayload>>> {
   const refreshToken = localStorage.getItem('refresh_token');
 
   if (!localStorage.getItem('refresh_token')) {
-    return left(new ApiError(new LoginRequiredError()));
+    return left(new LoginRequiredError())
   }
 
-  const url = `${appConfig.API_ULR}/api/token/refresh`;
+  const url = `${appConfig.API_ULR}/api/users/token/refresh`;
   const requestOptions = {
     method: RequestMethods.POST,
     url,
@@ -67,14 +68,22 @@ export async function refreshAccessToken(): Promise<Either<NonNullable<RefreshTo
 
     return right(data);
   } catch (error) {
-    return left(new ApiError(error));
+    if (error.response?.status === 401) {
+      return left(new LoginRequiredError())
+    }
+
+    return left(error);
   }
 }
 
-async function replayRequestWithTokenRefresh<R>(requestOptions: AxiosRequestConfig): Promise<Either<R, ApiError>> {
+/**
+ * Utility to request a new access token and replay the same request with the new access token. Use by `makeApiRequest`
+ * if it sees a 401 error.
+ */
+async function replayRequestWithTokenRefresh<R>(requestOptions: AxiosRequestConfig): Promise<ApiMethodReturnValue<R>> {
   const tokenResult = await refreshAccessToken();
 
-  if (tokenResult instanceof Left) return left<R, ApiError>(tokenResult.unsafeUnwrap());
+  if (tokenResult instanceof Left) return left<R, Error | LoginRequiredError>(tokenResult.unsafeUnwrap());
 
   const tokenPair = tokenResult.unwrapOrThrow();
 
@@ -85,17 +94,29 @@ async function replayRequestWithTokenRefresh<R>(requestOptions: AxiosRequestConf
 
     return data;
   } catch (error) {
-    return left(new ApiError(error));
+    return left(error);
   }
 }
 
-export async function makeApiRequest<R>(
+interface MakeApiRequestOptions {
+  withAuthHeader?: boolean;
+}
+
+/**
+ * Helper to make to an API request to the backend.
+ *
+ * Automatically handles retries on a 401 (token expired/invalid) by requesting a new access_token token via a stored
+ * refresh_token.
+ *
+ * If fetching a new access_token fails, this will return a LoginRequiredError.
+ */
+export default async function makeApiRequest<R>(
   method: RequestMethods,
   path: string,
   data: InspectableObject | null = null,
   options: ApiClientOptions = {},
-  withAuth = false
-): Promise<Either<R, ApiError>> {
+  { withAuthHeader = true }: MakeApiRequestOptions = {}
+): Promise<ApiMethodReturnValue<R>> {
   const apiUrl = options.apiUrl || appConfig.API_ULR;
   const requestOptions = {
     method,
@@ -107,44 +128,42 @@ export async function makeApiRequest<R>(
     requestOptions.data = data;
   }
 
-  if (withAuth) {
-    requestOptions.headers = {
-      ...requestOptions.headers,
-      Authorization: `Bearer: ${localStorage.getItem('access_token')}`,
-    };
-  }
-
-  const updatedRequestOptions = withAuth ? applyAuthHeader(requestOptions) : requestOptions;
+  const updatedRequestOptions = withAuthHeader ? applyAuthHeader(requestOptions) : requestOptions;
 
   try {
     const { data: res } = await axios(updatedRequestOptions);
 
     return right(res);
   } catch (error) {
-    if (error.response.statusCode === 401) {
+    if (error.response?.status === 401) {
       const response = await replayRequestWithTokenRefresh<R>(requestOptions);
 
       return response;
     }
 
-    return left(new ApiError(error));
+    return left(error);
   }
 }
 
-type useApiClientReturnValue<T> = [isFetching: boolean, data: Nullable<T>, error: Nullable<ApiError>];
+type UseApiClientReturnValue<T> = [isFetching: boolean, data: Nullable<T>, error: Nullable<Error>];
+
+interface UseApiClientOptions<T> {
+  setStateCallback?: Nullable<(data: T) => void>;
+  deps?: Array<unknown>;
+  withAuthHeader?: boolean;
+}
 
 export function useApiClient<R>(
   method: RequestMethods,
   path: string,
   data: InspectableObject | null = null,
   options: ApiClientOptions = {},
-  setStateCallback: Nullable<SetStateCallback<R>> = null,
-  deps: Array<unknown> = []
-): useApiClientReturnValue<R> {
+  { setStateCallback = null, deps = [], withAuthHeader = true }: UseApiClientOptions<R> = {},
+): UseApiClientReturnValue<R> {
   const cancelTokenSource = axios.CancelToken.source();
 
   const [isFetching, setIsFetching] = useState(true);
-  const [error, setError] = useState<Nullable<ApiError>>(null);
+  const [error, setError] = useState<Nullable<Error>>(null);
   const [responseData, setResponseData] = useState<Nullable<R>>(null);
 
   useEffect(() => {
@@ -152,16 +171,16 @@ export function useApiClient<R>(
       const response = await makeApiRequest<R>(method, path, data, {
         ...options,
         cancelToken: cancelTokenSource.token,
-      });
+      }, { withAuthHeader });
 
       const responseCb = setStateCallback !== null ? setStateCallback : setResponseData;
 
       if (response instanceof Left) {
-        const err: ApiError = response.unsafeUnwrap();
+        const err = response.unsafeUnwrap();
 
         // We don't want to call any react callbacks since the most likely case of a cancellation is an unmount event
         // ApiError instances wrap other errors
-        if (axios.isCancel(err.error)) return;
+        if (axios.isCancel(err)) return;
 
         setError(err);
       } else {
@@ -181,5 +200,3 @@ export function useApiClient<R>(
 
   return [isFetching, responseData, error];
 }
-
-export default makeApiRequest;

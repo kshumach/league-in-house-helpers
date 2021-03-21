@@ -1,20 +1,30 @@
 /* eslint-disable max-classes-per-file */
-export class EmptyResultError extends Error {}
-
-export class UnsafeResultAccessError extends Error {}
-
 export class UnsafeAccessError extends Error {
   constructor() {
     super('Accessed value of Left instance without performing `isLeft`, `isRight` or `instanceof` check.');
+
+    this.name = 'UnsafeAccessError';
   }
 }
 
-export class ApiError extends Error {
-  readonly error: Error;
+export class LoginRequiredError extends Error {
+  constructor(originPath = '') {
+    super(originPath);
 
-  constructor(error: Error) {
+    this.name = 'LoginRequiredError';
+  }
+}
+
+export class NoRouteMatchError extends Error {
+  constructor() {
     super();
 
-    this.error = error;
+    this.name = 'NoRouteMatchError';
   }
 }
+
+[UnsafeAccessError, LoginRequiredError, NoRouteMatchError].forEach((error) => {
+  Object.defineProperty(error, Symbol.hasInstance, {
+    value: (instance: Error): boolean => instance.name === error.name
+  })
+})

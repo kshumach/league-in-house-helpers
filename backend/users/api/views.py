@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
+from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, DestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken, BlacklistMixin, AccessToken
 
 from .serializers import UserWriteSerializer, UserReadSerializer, UserListSerializer
 
@@ -54,3 +56,14 @@ class RetrieveUserView(RetrieveAPIView):
     serializer_class = UserReadSerializer
     permission_classes = (IsAuthenticated,)
 
+
+class LogoutView(DestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request, *args, **kwargs):
+        encoded_token = request.data["token"]
+        token = RefreshToken(encoded_token)
+
+        token.blacklist()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
