@@ -1,29 +1,25 @@
-# import src.rankings_parser.parser as parser
 from src.rankings_parser.parser import parse_rankings, parse_players, parse_preferred_roles
 from src.team_builder.team import Team
-from src.common.player import Player
 import random
+import click
 
-
-# builder itself
-# 2 priorities: team balance 1st, then role preference
 
 def are_teams_balanced(team_a, team_b):
     # using 4 for now, but can make it tighter tolerance in future
     return abs(team_a.get_rating() - team_b.get_rating()) <= 4
 
 
-def swap(teamA, teamB):
-    playerA = teamA.get_highest_rated_player()
-    playerB = teamB.get_highest_rated_player()
-    teamA.members.remove(playerA)
-    teamB.members.remove(playerB)
-    teamA.reshuffle()
-    teamB.reshuffle()
-    teamA.add_player(playerB)
-    teamB.add_player(playerA)
-    teamA.reshuffle()
-    teamB.reshuffle()
+def swap(team_a, team_b):
+    playerA = team_a.get_highest_rated_player()
+    playerB = team_b.get_highest_rated_player()
+    team_a.members.remove(playerA)
+    team_b.members.remove(playerB)
+    team_a.assign_roles()
+    team_b.assign_roles()
+    team_a.add_player(playerB)
+    team_b.add_player(playerA)
+    team_a.assign_roles()
+    team_b.assign_roles()
 
 
 # method to add a random player from the players map (of 10 or more) and then deletes chosen player from the map
@@ -33,58 +29,58 @@ def add(team, dict):
     del dict[chosen_player.name]
 
 
-def run():
-    teamA = Team("A")
-    teamB = Team("B")
+@click.command()
+@click.option('--rankings-file', type=click.File(), help="CSV file of rankings.", required=True)
+@click.option('--roles-file', type=click.File(), help="CSV file of preferred roles.", required=True)
+def run(roles_file, rankings_file):
+    team_a = Team("A")
+    team_b = Team("B")
 
-    with open("C:\\Users\\Selim\\PycharmProjects\\league-in-house-helpers\\src\\team_builder\\rankings.csv") as file:
-        list = parse_players(file)
-        players_map = parse_rankings(file, list)
-        # print(players_map)
-        # print(players_map.__repr__())
-        # print([(k, str(v)) for k, v in players_map.items()])
+    players = parse_players(rankings_file)
+    players_map = parse_rankings(rankings_file, players)
 
-    with open("C:\\Users\\Selim\\PycharmProjects\\league-in-house-helpers\\src\\team_builder\\preffs.csv") as file:
-        parse_preferred_roles(file, players_map)
+    parse_preferred_roles(roles_file, players_map)
 
-    add(teamA, players_map)
-    add(teamB, players_map)
-    add(teamA, players_map)
-    add(teamB, players_map)
-    add(teamA, players_map)
-    add(teamB, players_map)
-    add(teamA, players_map)
-    add(teamB, players_map)
-    add(teamA, players_map)
-    add(teamB, players_map)
+    add(team_a, players_map)
+    add(team_b, players_map)
+    add(team_a, players_map)
+    add(team_b, players_map)
+    add(team_a, players_map)
+    add(team_b, players_map)
+    add(team_a, players_map)
+    add(team_b, players_map)
+    add(team_a, players_map)
+    add(team_b, players_map)
+
+    team_a.assign_roles()
+    team_b.assign_roles()
 
     infinite_loop_helper: int = 0
 
     while True:
-
         # swap function needs work so I've put this as a failsafe
         if infinite_loop_helper == 10:
             print("I looped 10 times, that's enough for me.")
             print("Here's the best I could do:")
-            print(teamA)
-            print(f' Team Rating: {teamA.get_rating()}')
+            print(team_a)
+            print(f' Team Rating: {team_a.get_rating()}')
             print()
-            print(teamB)
-            print(f' Team Rating: {teamB.get_rating()}')
+            print(team_b)
+            print(f' Team Rating: {team_b.get_rating()}')
             break
 
         # if teams are balanced & full then prints each team composition with their rating
-        if are_teams_balanced(teamA, teamB) and teamA.is_team_full() and teamB.is_team_full():
-            print(teamA)
-            print(f' Team Rating: {teamA.get_rating()}')
+        if are_teams_balanced(team_a, team_b) and team_a.is_team_full() and team_b.is_team_full():
+            print(team_a)
+            print(f' Team Rating: {team_a.get_rating()}')
             print()
-            print(teamB)
-            print(f' Team Rating: {teamB.get_rating()}')
+            print(team_b)
+            print(f' Team Rating: {team_b.get_rating()}')
             break
 
         # if teams are unbalanced then uses swap function to try to balance
-        if not are_teams_balanced(teamA, teamB):
-            swap(teamA, teamB)
+        if not are_teams_balanced(team_a, team_b):
+            swap(team_a, team_b)
             print('\n Re-balancing teams... \n')
 
         infinite_loop_helper = infinite_loop_helper + 1

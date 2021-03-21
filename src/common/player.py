@@ -28,6 +28,25 @@ class Player:
             filtered_ratings = [rating for rating in self.ratings if (upper_bound >= rating >= lower_bound)]
             return round(sum(filtered_ratings) / len(filtered_ratings), 2)
 
+    def rating_modifier_for_role(self, role):
+        if role == self.pref1:
+            return 1
+
+        if role == self.pref2:
+            return 0.8
+
+        if role == self.pref3:
+            return 0.6
+
+        return 0.3
+
+    def print_rating_for_role(self, role):
+        original_rating = self.average_rating_within_std_dev()
+        rating = original_rating * self.rating_modifier_for_role(role)
+        name = self.name
+
+        return f"name:{name}, original_rating: {original_rating}, modified_rating: {rating}"
+
     def std_dev(self):
         return statistics.stdev(self.ratings)
 
