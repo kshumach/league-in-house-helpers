@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 import os
 from pathlib import Path
-from typing import Optional, Any
 
 import dotenv
 from django.core.exceptions import ImproperlyConfigured
@@ -33,9 +32,13 @@ def get_from_env(key: str, default=None, raise_on_missing=False, lower_case=Fals
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 DOTENV_PATH = os.path.join(BASE_DIR, ".env")
+SECRETS_DOTENV_PATH = os.path.join(BASE_DIR, "secrets.env")
 
 if os.path.exists(DOTENV_PATH):
     dotenv.load_dotenv(DOTENV_PATH, verbose=True, override=True)
+
+if os.path.exists(SECRETS_DOTENV_PATH):
+    dotenv.load_dotenv(SECRETS_DOTENV_PATH, verbose=True, override=True)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -71,6 +74,9 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "api",
     "users",
+    "summoners",
+    "rankings",
+    "roles",
 ]
 
 MIDDLEWARE = [
@@ -227,3 +233,8 @@ DEV_DOMAINS = [
 ]
 
 CORS_ALLOWED_ORIGINS = DEV_DOMAINS if ENV == "development" else production_domain()
+
+
+# ========== Riot API ==========
+
+RIOT_API_KEY = get_from_env("RIOT_API_KEY", raise_on_missing=True)

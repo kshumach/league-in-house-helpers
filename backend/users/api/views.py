@@ -21,10 +21,7 @@ class CreateUserView(CreateAPIView):
         user = get_user_model().objects.get(username=new_user_username)
         refresh = RefreshToken.for_user(user)
 
-        response.data["token"] = {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token)
-        }
+        response.data["token"] = {"refresh": str(refresh), "access": str(refresh.access_token)}
 
         return response
 
@@ -77,7 +74,7 @@ class PasswordChangeView(UpdateAPIView):
         return get_user_model().objects.filter(username=self.request.user.username)
 
     def patch(self, request, *args, **kwargs):
-        raise MethodNotAllowed('PATCH')
+        raise MethodNotAllowed("PATCH")
 
     def put(self, request, *args, **kwargs):
         super().put(request, *args, **kwargs)

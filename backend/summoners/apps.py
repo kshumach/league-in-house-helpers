@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class UsersConfig(AppConfig):
-    name = "users"
+class SummonersConfig(AppConfig):
+    name = "backend.summoners"
     default_auto_field = "django.db.models.AutoField"
