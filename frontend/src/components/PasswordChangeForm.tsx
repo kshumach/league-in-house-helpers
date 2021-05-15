@@ -1,15 +1,18 @@
 import React, { ChangeEvent, ReactElement, useState } from 'react';
 import {
   Button,
-  CircularProgress, Container,
+  CircularProgress,
+  Container,
   FormControl,
   FormHelperText,
   Grid,
   makeStyles,
-  TextField, Theme,
+  TextField,
+  Theme,
   Tooltip,
 } from '@material-ui/core';
 import { AxiosError } from 'axios';
+import { useSnackbar } from 'notistack';
 import { Left, Nullable } from '../utils/types';
 import makeApiRequest, { RequestMethods } from '../utils/apiClient';
 
@@ -33,17 +36,25 @@ const useStyles = makeStyles(({ spacing }: Theme) => ({
   },
   formErrorText: {
     marginTop: spacing(2),
-  }
+  },
 }));
 
 export default function PasswordChangeForm(): ReactElement {
+  const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [formError, setFormError] = useState<Nullable<string>>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
   const classes = useStyles();
 
-  const submitDisabled = (newPassword !== passwordConfirmation) || newPassword.length < 9;
+  const submitDisabled = newPassword !== passwordConfirmation || newPassword.length < 9 || !oldPassword;
+
+  const onOldPasswordChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (formError) setFormError(null);
+
+    setOldPassword(event.target.value);
+  };
 
   const onNewPasswordChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (formError) setFormError(null);
@@ -62,10 +73,16 @@ export default function PasswordChangeForm(): ReactElement {
 
     setIsLoading(true);
 
-    const response = await makeApiRequest<string>(RequestMethods.POST, 'users/change_password', {
-      password: newPassword,
-      password_confirmation: passwordConfirmation,
-    }, {});
+    const response = await makeApiRequest<string>(
+      RequestMethods.PUT,
+      'users/change_password',
+      {
+        old_password: oldPassword,
+        new_password: newPassword,
+        new_password_confirmation: passwordConfirmation,
+      },
+      {}
+    );
 
     if (response instanceof Left) {
       const error = response.unsafeUnwrap();
@@ -77,8 +94,9 @@ export default function PasswordChangeForm(): ReactElement {
         throw error;
       }
     } else {
-      // Show toast
-      return;
+      enqueueSnackbar('Password successfully changed.', {
+        variant: 'success',
+      });
     }
 
     setIsLoading(false);
@@ -94,7 +112,7 @@ export default function PasswordChangeForm(): ReactElement {
     }
 
     if (submitDisabled) {
-      const tooltipTitle = 'Passwords must match, and me at least 9 characters long.'
+      const tooltipTitle = 'Passwords must match, and be at least 9 characters long. Old password is required.';
 
       return (
         <Tooltip arrow title={tooltipTitle}>
@@ -108,11 +126,11 @@ export default function PasswordChangeForm(): ReactElement {
               variant="contained"
               onClick={onSubmit}
             >
-              Log In
+              Change Password
             </Button>
           </span>
         </Tooltip>
-      )
+      );
     }
 
     return (
@@ -126,13 +144,29 @@ export default function PasswordChangeForm(): ReactElement {
       >
         Submit
       </Button>
-    )
-  }
+    );
+  };
 
   return (
     <Container className={classes.contentWrapper} maxWidth="xs">
       <form noValidate className={classes.form}>
         <Grid container alignItems="center" direction="column">
+          <Grid item className={classes.formItem} xs={12}>
+            <FormControl className={classes.formControl}>
+              <TextField
+                autoFocus
+                required
+                aria-describedby="old-password-help-text"
+                error={!!formError}
+                id="old-password"
+                label="Old Password"
+                type="password"
+                value={oldPassword}
+                variant="outlined"
+                onChange={onOldPasswordChange}
+              />
+            </FormControl>
+          </Grid>
           <Grid item className={classes.formItem} xs={12}>
             <FormControl className={classes.formControl}>
               <TextField
@@ -165,15 +199,9 @@ export default function PasswordChangeForm(): ReactElement {
             </FormControl>
           </Grid>
         </Grid>
-        {
-          (!!formError) && (
-            <FormHelperText className={classes.formErrorText}>
-              {formError}
-            </FormHelperText>
-          )
-        }
+        {!!formError && <FormHelperText className={classes.formErrorText}>{formError}</FormHelperText>}
         {renderSubmitButton()}
       </form>
     </Container>
-  )
+  );
 }

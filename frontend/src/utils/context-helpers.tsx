@@ -1,4 +1,4 @@
-import React, { Context, ReactElement } from "react";
+import React, { Context, ReactElement } from 'react';
 
 interface PropsWithCallableChild<T> {
   // eslint-disable-next-line react/no-unused-prop-types
@@ -21,9 +21,11 @@ export function useGenericContextHelper<C>(
   return context as NonNullable<C>;
 }
 
-export function GenericContextConsumer<C>(
-  { children, ContextObject, contextName }: PropsWithCallableChild<C>,
-): ReactElement {
+export function GenericContextConsumer<C>({
+  children,
+  ContextObject,
+  contextName,
+}: PropsWithCallableChild<C>): ReactElement {
   return (
     <ContextObject.Consumer>
       {(context) => {

@@ -11,6 +11,8 @@
     "esModuleInterop": true,
     "lib": ["es6", "dom"],
     "noImplicitThis": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "isolatedModules": true,
+    "strictFunctionTypes": true
   }
 }

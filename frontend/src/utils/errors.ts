@@ -25,6 +25,6 @@ export class NoRouteMatchError extends Error {
 
 [UnsafeAccessError, LoginRequiredError, NoRouteMatchError].forEach((error) => {
   Object.defineProperty(error, Symbol.hasInstance, {
-    value: (instance: Error): boolean => instance.name === error.name
-  })
-})
+    value: (instance: Error): boolean => instance.name === error.name,
+  });
+});

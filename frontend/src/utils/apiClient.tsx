@@ -48,7 +48,7 @@ export async function refreshAccessToken(): Promise<ApiMethodReturnValue<NonNull
   const refreshToken = localStorage.getItem('refresh_token');
 
   if (!localStorage.getItem('refresh_token')) {
-    return left(new LoginRequiredError())
+    return left(new LoginRequiredError());
   }
 
   const url = `${appConfig.API_ULR}/api/users/token/refresh`;
@@ -69,7 +69,8 @@ export async function refreshAccessToken(): Promise<ApiMethodReturnValue<NonNull
     return right(data);
   } catch (error) {
     if (error.response?.status === 401) {
-      return left(new LoginRequiredError())
+      console.log('HREE');
+      return left(new LoginRequiredError());
     }
 
     return left(error);
@@ -135,7 +136,8 @@ export default async function makeApiRequest<R>(
 
     return right(res);
   } catch (error) {
-    if (error.response?.status === 401) {
+    // Auth header usage mean 401 was likely due to an expired token
+    if (error.response?.status === 401 && withAuthHeader) {
       const response = await replayRequestWithTokenRefresh<R>(requestOptions);
 
       return response;
@@ -158,7 +160,7 @@ export function useApiClient<R>(
   path: string,
   data: InspectableObject | null = null,
   options: ApiClientOptions = {},
-  { setStateCallback = null, deps = [], withAuthHeader = true }: UseApiClientOptions<R> = {},
+  { setStateCallback = null, deps = [], withAuthHeader = true }: UseApiClientOptions<R> = {}
 ): UseApiClientReturnValue<R> {
   const cancelTokenSource = axios.CancelToken.source();
 
@@ -168,10 +170,16 @@ export function useApiClient<R>(
 
   useEffect(() => {
     async function makeApiCall() {
-      const response = await makeApiRequest<R>(method, path, data, {
-        ...options,
-        cancelToken: cancelTokenSource.token,
-      }, { withAuthHeader });
+      const response = await makeApiRequest<R>(
+        method,
+        path,
+        data,
+        {
+          ...options,
+          cancelToken: cancelTokenSource.token,
+        },
+        { withAuthHeader }
+      );
 
       const responseCb = setStateCallback !== null ? setStateCallback : setResponseData;
 

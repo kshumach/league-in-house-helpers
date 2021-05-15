@@ -1,13 +1,13 @@
 from django.contrib.auth import get_user_model
+from django.views.decorators.http import require_http_methods
 from rest_framework import status
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, DestroyAPIView
+from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import RefreshToken, BlacklistMixin, AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import UserWriteSerializer, UserReadSerializer, UserListSerializer
+from .serializers import UserListSerializer, UserReadSerializer, UserWriteSerializer, PasswordChangeSerializer
 
 
 class CreateUserView(CreateAPIView):
@@ -65,5 +65,21 @@ class LogoutView(DestroyAPIView):
         token = RefreshToken(encoded_token)
 
         token.blacklist()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PasswordChangeView(UpdateAPIView):
+    serializer_class = PasswordChangeSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return get_user_model().objects.filter(username=self.request.user.username)
+
+    def patch(self, request, *args, **kwargs):
+        raise MethodNotAllowed('PATCH')
+
+    def put(self, request, *args, **kwargs):
+        super().put(request, *args, **kwargs)
 
         return Response(status=status.HTTP_204_NO_CONTENT)

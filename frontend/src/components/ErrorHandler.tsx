@@ -12,7 +12,7 @@ export default function ErrorHandler({ error }: { error: Error }): ReactElement 
     // Remove any left over tokens otherwise login will redirect to home, which will redirect back to login, etc.
     deleteStoredTokenPair();
 
-    return <Redirect to={`/login${queryParam}`} />
+    return <Redirect to={`/login${queryParam}`} />;
   }
 
   if (error instanceof NoRouteMatchError) {
@@ -20,8 +20,8 @@ export default function ErrorHandler({ error }: { error: Error }): ReactElement 
       <Container>
         <p>Page Not Found.</p>
       </Container>
-    )
+    );
   }
-  
+
   throw error;
 }

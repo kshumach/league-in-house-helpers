@@ -10,6 +10,7 @@
     "html-webpack-plugin": "^4.5.1",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.20",
+    "notistack": "^1.0.7",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",
@@ -52,7 +53,7 @@
   "scripts": {
     "start": "webpack serve --open --hot --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
-    "lint": "node_modules/.bin/eslint src/**/*.{js,jsx} --quiet",
+    "lint": "node_modules/.bin/eslint src/**/*.{js,jsx,ts,tsx} --quiet",
     "format-check": "node_modules/.bin/prettier --check \"**/*.{js,jsx,ts,tsx}\"",
     "format": "node_modules/.bin/prettier -w \"**/*.{js,jsx,ts,tsx}\""
   }

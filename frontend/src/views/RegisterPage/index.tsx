@@ -1,13 +1,15 @@
 import React, { ChangeEvent, ReactElement, useState } from 'react';
 import {
-  Button, CircularProgress,
+  Button,
+  CircularProgress,
   Container,
   FormControl,
   Grid,
   Link,
   makeStyles,
   TextField,
-  Theme, Tooltip,
+  Theme,
+  Tooltip,
   Typography,
 } from '@material-ui/core';
 // eslint-disable-next-line import/no-named-as-default
@@ -129,11 +131,17 @@ export default function RegisterPage(): ReactElement {
 
     setIsLoading(true);
 
-    const response = await makeApiRequest<CreateUserSuccessPayload>(RequestMethods.POST, 'users/create', {
-      registration_token: registrationToken,
-      username,
-      password,
-    }, {}, { withAuthHeader: false });
+    const response = await makeApiRequest<CreateUserSuccessPayload>(
+      RequestMethods.POST,
+      'users/create',
+      {
+        registration_token: registrationToken,
+        username,
+        password,
+      },
+      {},
+      { withAuthHeader: false }
+    );
 
     if (response instanceof Left) {
       const error = response.unsafeUnwrap();
@@ -142,9 +150,7 @@ export default function RegisterPage(): ReactElement {
 
       handleErrors(error);
     } else {
-      const {
-        token: tokenPair,
-      } = response.unwrapOrThrow();
+      const { token: tokenPair } = response.unwrapOrThrow();
 
       storeTokenPair(tokenPair);
 
@@ -185,7 +191,7 @@ export default function RegisterPage(): ReactElement {
             </Button>
           </span>
         </Tooltip>
-      )
+      );
     }
 
     return (
@@ -199,8 +205,8 @@ export default function RegisterPage(): ReactElement {
       >
         Sign Up
       </Button>
-    )
-  }
+    );
+  };
 
   return (
     <Container component="main" maxWidth="xs">

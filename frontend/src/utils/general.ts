@@ -4,7 +4,7 @@ import { Either, InspectableObject, Left, Right } from './types';
 
 export function camelizeKeys(object: InspectableObject, keysToSkip: Array<string> = []): InspectableObject {
   return Object.entries(object).reduce(
-    (acc: InspectableObject, [key, value]: [string, InspectableObject]): InspectableObject => {
+    (acc: InspectableObject, [key, value]: [string, unknown]): InspectableObject => {
       if (keysToSkip.includes(key)) {
         return acc;
       }
@@ -12,7 +12,7 @@ export function camelizeKeys(object: InspectableObject, keysToSkip: Array<string
       if (isPlainObject(value)) {
         return {
           ...acc,
-          [_camelCase(key)]: camelizeKeys(value),
+          [_camelCase(key)]: camelizeKeys(value as InspectableObject),
         };
       }
 
@@ -28,10 +28,10 @@ export function camelizeKeys(object: InspectableObject, keysToSkip: Array<string
 export function reduceErrors(errors: Array<string>): string {
   if (errors.length === 0) return '';
 
-  return errors.join(' ')
+  return errors.join(' ');
 }
 
-export function storeTokenPair({ access, refresh }: { access: string, refresh: string }): void {
+export function storeTokenPair({ access, refresh }: { access: string; refresh: string }): void {
   localStorage.setItem('access_token', access);
   localStorage.setItem('refresh_token', refresh);
 }

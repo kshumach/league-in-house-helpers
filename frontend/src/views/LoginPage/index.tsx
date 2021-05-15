@@ -3,18 +3,21 @@ import {
   Button,
   CircularProgress,
   Container,
-  FormControl, FormHelperText,
-  Grid, Link,
+  FormControl,
+  FormHelperText,
+  Grid,
+  Link,
   makeStyles,
   TextField,
-  Theme, Tooltip,
+  Theme,
+  Tooltip,
   Typography,
 } from '@material-ui/core';
+import { Link as RouterLink, useHistory } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import makeApiRequest, { RequestMethods } from '../../utils/apiClient';
 import { Left, Nullable } from '../../utils/types';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { storeTokenPair } from '../../utils/general';
-import { AxiosError } from 'axios';
 
 interface LoginSuccessPayload {
   access: string;
@@ -51,9 +54,12 @@ export default function LoginPage(): ReactElement {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState<Nullable<string>>(null);
+  const [error, setError] = useState<Nullable<Error>>(null);
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
   const classes = useStyles();
+
+  if (error) throw error;
 
   const onUsernameChange = (event: ChangeEvent<HTMLInputElement>): void => {
     if (formError) {
@@ -77,19 +83,25 @@ export default function LoginPage(): ReactElement {
 
     setIsLoading(true);
 
-    const response = await makeApiRequest<LoginSuccessPayload>(RequestMethods.POST, 'users/login', {
-      username,
-      password,
-    }, {}, { withAuthHeader: false });
+    const response = await makeApiRequest<LoginSuccessPayload>(
+      RequestMethods.POST,
+      'users/login',
+      {
+        username,
+        password,
+      },
+      {},
+      { withAuthHeader: false }
+    );
 
     if (response instanceof Left) {
-      const error = response.unsafeUnwrap();
+      const err = response.unsafeUnwrap();
 
-      if ((error as AxiosError).isAxiosError) {
+      if ((err as AxiosError).isAxiosError) {
         setFormError('Invalid username and password combination.');
       } else {
         // Something else, job for the ErrorBoundary.
-        throw error;
+        setError(err);
       }
     } else {
       const tokenPair = response.unwrapOrThrow();
@@ -114,7 +126,7 @@ export default function LoginPage(): ReactElement {
     }
 
     if (submitDisabled) {
-      const tooltipTitle = 'username and password are required.'
+      const tooltipTitle = 'username and password are required.';
 
       return (
         <Tooltip arrow title={tooltipTitle}>
@@ -132,7 +144,7 @@ export default function LoginPage(): ReactElement {
             </Button>
           </span>
         </Tooltip>
-      )
+      );
     }
 
     return (
@@ -146,8 +158,8 @@ export default function LoginPage(): ReactElement {
       >
         Log In
       </Button>
-    )
-  }
+    );
+  };
 
   return (
     <Container component="main" maxWidth="xs">
@@ -191,13 +203,7 @@ export default function LoginPage(): ReactElement {
               </FormControl>
             </Grid>
           </Grid>
-          {
-            (!!formError) && (
-              <FormHelperText className={classes.formErrorText}>
-                {formError}
-              </FormHelperText>
-            )
-          }
+          {!!formError && <FormHelperText className={classes.formErrorText}>{formError}</FormHelperText>}
           {renderSubmitButton()}
         </form>
         <Grid container className={classes.registerRedirect} justify="center">
@@ -213,5 +219,5 @@ export default function LoginPage(): ReactElement {
         </Grid>
       </div>
     </Container>
-  )
+  );
 }

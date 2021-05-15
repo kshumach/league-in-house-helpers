@@ -4,12 +4,12 @@ import { hasStoredTokenPair } from '../../utils/general';
 
 interface RedirectIfLoggedInProps {
   to?: string;
-  children: ReactElement
+  children: ReactElement;
 }
 
 export default function RedirectIfLoggedIn({ children, to = '/' }: RedirectIfLoggedInProps): ReactElement {
   if (hasStoredTokenPair()) {
-    return <Redirect to={to} />
+    return <Redirect to={to} />;
   }
 
   return children;

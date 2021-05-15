@@ -2,10 +2,10 @@ import React, { ReactChild, ReactElement, useEffect, useState } from 'react';
 import jwtDecode from 'jwt-decode';
 import { CircularProgress } from '@material-ui/core';
 import { Redirect, useLocation } from 'react-router-dom';
-import { CustomJwtPayload, Nullable, Optional } from '../utils/types';
-import { GenericContextConsumer, useGenericContextHelper } from "../utils/context-helpers";
+import { CustomJwtPayload, Left, Nullable, Optional } from '../utils/types';
+import { GenericContextConsumer, useGenericContextHelper } from '../utils/context-helpers';
 import { refreshAccessToken } from '../utils/apiClient';
-import { hasStoredTokenPair, Left } from '../utils/general';
+import { hasStoredTokenPair } from '../utils/general';
 
 export interface UserCtx {
   username: Nullable<string>;
@@ -66,7 +66,7 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
   };
 
   if (loginRequired) {
-    return <Redirect to={`/login?redirect_to=${location.pathname}`} />
+    return <Redirect to={`/login?redirect_to=${location.pathname}`} />;
   }
 
   return (
@@ -86,12 +86,12 @@ function useUserContext(): NonNullable<UserContextType> {
   return useGenericContextHelper<UserContextType>(UserContext, 'useUserContext', 'UserContext');
 }
 
-function UserContextConsumer({ children } : { children: (context: UserContextType) => ReactElement }): ReactElement {
+function UserContextConsumer({ children }: { children: (context: UserContextType) => ReactElement }): ReactElement {
   return (
-    <GenericContextConsumer ContextObject={UserContext} contextName="UserContext">
+    <GenericContextConsumer contextName="UserContext" ContextObject={UserContext}>
       {children}
     </GenericContextConsumer>
-  )
+  );
 }
 
 export { useUserContext, UserContextConsumer, UserContextProvider };

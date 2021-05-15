@@ -7,7 +7,6 @@ export type Nullable<T> = T | null;
 export type Optional<T> = T | undefined;
 export type InspectableObject = NonNullable<Record<string, unknown>>;
 
-
 // JWT
 export interface CustomJwtPayload extends JwtPayload {
   // eslint-disable-next-line camelcase
@@ -97,16 +96,16 @@ export class Right<T, E extends Error> implements EitherInterface<T, E> {
 
 Object.defineProperty(Left, Symbol.hasInstance, {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: (instance: any): boolean => (instance.isLeft && instance.isLeft())
+  value: (instance: any): boolean => instance.isLeft && instance.isLeft(),
 });
 
 Object.defineProperty(Right, Symbol.hasInstance, {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: (instance: any): boolean => (instance.isRight && instance.isRight())
+  value: (instance: any): boolean => instance.isRight && instance.isRight(),
 });
 
 export type Either<T, E extends Error> = Left<T, E> | Right<T, E>;
 
 // API
 
-export type ApiMethodReturnValue<T> = Either<T, (Error | LoginRequiredError)>;
+export type ApiMethodReturnValue<T> = Either<T, Error | LoginRequiredError>;

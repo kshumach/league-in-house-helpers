@@ -1,7 +1,7 @@
 import React, { ReactElement, useRef, useState } from 'react';
 import { Button, Grid, makeStyles, Menu, MenuItem, Theme } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
-import SettingsIcon from '@material-ui/icons/Settings';
+import AccountCircle from '@material-ui/icons/AccountCircle';
 import { Nullable } from '../utils/types';
 import makeApiRequest, { RequestMethods } from '../utils/apiClient';
 import { deleteStoredTokenPair } from '../utils/general';
@@ -31,7 +31,7 @@ export default function NavBar({ children }: { children: ReactElement }): ReactE
   const history = useHistory();
   const classes = useStyles();
 
-  const onSettingsOpen = () => {
+  const onAccountOpen = () => {
     /*
      * Due to using a button with an icon, if the user clicks on the svg the menu actually opens relative to the svg.
      * To fix this, we set the value of the anchorEl to a direct ref of the button. This way the menu always opens
@@ -40,7 +40,7 @@ export default function NavBar({ children }: { children: ReactElement }): ReactE
     setAnchorRef(buttonRef.current);
   };
 
-  const onSettingsClose = () => {
+  const onAccountClose = () => {
     setAnchorRef(null);
   };
 
@@ -52,26 +52,33 @@ export default function NavBar({ children }: { children: ReactElement }): ReactE
       'users/logout',
       { token: localStorage.getItem('refresh_token') },
       {},
-      { withAuthHeader: true },
+      { withAuthHeader: true }
     );
 
-    history.push('/login');
+    return history.push('/login');
   };
+
+  const onSettingsClick = () => history.push('/settings');
 
   return (
     <React.Fragment>
-      <Grid container className={classes.container} component="nav" justify="flex-end">
+      <Grid
+        container
+        className={classes.container}
+        component="nav"
+        justify="flex-end"
+      >
         <Grid item className={classes.settings} xs={1}>
           <Button
             ref={buttonRef}
             aria-haspopup
             aria-controls="settings-menu"
             color="default"
-            startIcon={<SettingsIcon />}
+            startIcon={<AccountCircle />}
             variant="contained"
-            onClick={onSettingsOpen}
+            onClick={onAccountOpen}
           >
-            Settings
+            Account
           </Button>
           <Menu
             keepMounted
@@ -80,8 +87,9 @@ export default function NavBar({ children }: { children: ReactElement }): ReactE
             getContentAnchorEl={null} // Needed in order to be able to use anchorOrigin
             id="settings-menu"
             open={!!anchorEl}
-            onClose={onSettingsClose}
+            onClose={onAccountClose}
           >
+            <MenuItem onClick={onSettingsClick}>Settings</MenuItem>
             <MenuItem onClick={onLogoutClick}>Logout</MenuItem>
           </Menu>
         </Grid>
