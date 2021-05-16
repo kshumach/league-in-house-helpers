@@ -1,28 +1,29 @@
 import _camelCase from 'lodash/camelCase';
 import isPlainObject from 'lodash/isPlainObject';
-import { Either, InspectableObject, Left, Right } from './types';
+import { Either, InspectableObject, Left, Optional, Right } from './types';
 
-export function camelizeKeys(object: InspectableObject, keysToSkip: Array<string> = []): InspectableObject {
-  return Object.entries(object).reduce(
-    (acc: InspectableObject, [key, value]: [string, unknown]): InspectableObject => {
-      if (keysToSkip.includes(key)) {
-        return acc;
-      }
+export function coalesce<T>(value: Optional<T>, fallback: T): T {
+  return value ?? fallback;
+}
 
-      if (isPlainObject(value)) {
-        return {
-          ...acc,
-          [_camelCase(key)]: camelizeKeys(value as InspectableObject),
-        };
-      }
+export function camelizeKeys<T extends InspectableObject>(object: T, keysToSkip: Array<string> = []): T {
+  return Object.entries(object).reduce((acc, [key, value]): T => {
+    if (keysToSkip.includes(key)) {
+      return acc;
+    }
 
+    if (isPlainObject(value)) {
       return {
         ...acc,
-        [_camelCase(key)]: value,
+        [_camelCase(key)]: camelizeKeys(value as InspectableObject),
       };
-    },
-    {}
-  );
+    }
+
+    return {
+      ...acc,
+      [_camelCase(key)]: value,
+    };
+  }, {} as T);
 }
 
 export function reduceErrors(errors: Array<string>): string {

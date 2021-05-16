@@ -18,7 +18,7 @@ import makeApiRequest, { RequestMethods } from '../utils/apiClient';
 
 const useStyles = makeStyles(({ spacing }: Theme) => ({
   contentWrapper: {
-    marginTop: spacing(8),
+    marginTop: spacing(2),
   },
   form: {
     width: '100%',
@@ -45,6 +45,7 @@ export default function PasswordChangeForm(): ReactElement {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [formError, setFormError] = useState<Nullable<string>>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [unhandledError, setUnhandledError] = useState<Nullable<Error>>(null);
   const { enqueueSnackbar } = useSnackbar();
   const classes = useStyles();
 
@@ -91,7 +92,7 @@ export default function PasswordChangeForm(): ReactElement {
         setFormError('Failed to change password.');
       } else {
         // Something else, job for the ErrorBoundary.
-        throw error;
+        setUnhandledError(error);
       }
     } else {
       enqueueSnackbar('Password successfully changed.', {
@@ -146,6 +147,8 @@ export default function PasswordChangeForm(): ReactElement {
       </Button>
     );
   };
+
+  if (unhandledError !== null) throw unhandledError;
 
   return (
     <Container className={classes.contentWrapper} maxWidth="xs">

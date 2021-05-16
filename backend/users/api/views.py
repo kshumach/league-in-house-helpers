@@ -48,10 +48,11 @@ class ListUserView(ListAPIView):
 
 
 class RetrieveUserView(RetrieveAPIView):
-    lookup_field = "username"
-
     serializer_class = UserReadSerializer
     permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
 
 
 class LogoutView(DestroyAPIView):
@@ -66,12 +67,12 @@ class LogoutView(DestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class PasswordChangeView(UpdateAPIView):
+class PasswordUpdateView(UpdateAPIView):
     serializer_class = PasswordChangeSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):
-        return get_user_model().objects.filter(username=self.request.user.username)
+        return self.request.user
 
     def patch(self, request, *args, **kwargs):
         raise MethodNotAllowed("PATCH")

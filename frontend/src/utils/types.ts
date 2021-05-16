@@ -109,3 +109,17 @@ export type Either<T, E extends Error> = Left<T, E> | Right<T, E>;
 // API
 
 export type ApiMethodReturnValue<T> = Either<T, Error | LoginRequiredError>;
+
+export enum Role {
+  TOP = 'Top',
+  JUNGLE = 'Jungle',
+  MID = 'Mid',
+  MARKSMAN = 'Marksman',
+  SUPPORT = 'Support',
+}
+
+export type PreferredRoles = {
+  primaryRole: Role;
+  secondaryRole: Role;
+  offRole: Role;
+};

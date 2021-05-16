@@ -30,7 +30,7 @@ class Ranking(models.Model):
 
 
 class UserRanking(models.Model):
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="rankings", on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="rankings", on_delete=models.CASCADE)
     ranking = models.ForeignKey(Ranking, null=True, on_delete=models.SET_NULL)
     rated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, related_name="ranking_ballots", on_delete=models.SET_NULL

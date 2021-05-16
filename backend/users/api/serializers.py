@@ -3,6 +3,8 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 
+from backend.roles.api.serializers import UserRolePreferenceReadSerializer
+
 
 class UserWriteSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
@@ -39,9 +41,11 @@ class UserWriteSerializer(serializers.ModelSerializer):
 
 
 class UserReadSerializer(serializers.ModelSerializer):
+    preferred_roles = UserRolePreferenceReadSerializer(source="role_preferences")
+
     class Meta:
         model = get_user_model()
-        fields = ["username"]
+        fields = ["id", "preferred_roles"]
 
 
 class UserListSerializer(serializers.Serializer):

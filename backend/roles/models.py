@@ -21,7 +21,7 @@ class Role(models.Model):
 
 
 class UserRolePreference(models.Model):
-    user_id = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="role_preferences", on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="role_preferences", on_delete=models.CASCADE)
     primary_role = models.ForeignKey(Role, related_name="primary_preferences", null=True, on_delete=models.SET_NULL)
     secondary_role = models.ForeignKey(Role, related_name="secondary_preferences", null=True, on_delete=models.SET_NULL)
     off_role = models.ForeignKey(Role, related_name="off_role_preferences", null=True, on_delete=models.SET_NULL)
