@@ -1,8 +1,8 @@
 import _camelCase from 'lodash/camelCase';
 import isPlainObject from 'lodash/isPlainObject';
-import { Either, InspectableObject, Left, Optional, Right } from './types';
+import { Either, InspectableObject, Left, Nullable, Optional, Right } from './types';
 
-export function coalesce<T>(value: Optional<T>, fallback: T): T {
+export function coalesce<T>(value: Optional<T> | Nullable<T>, fallback: T): T {
   return value ?? fallback;
 }
 

@@ -119,7 +119,7 @@ export enum Role {
 }
 
 export type PreferredRoles = {
-  primaryRole: Role;
-  secondaryRole: Role;
-  offRole: Role;
+  primaryRole: Nullable<Role>;
+  secondaryRole: Nullable<Role>;
+  offRole: Nullable<Role>;
 };

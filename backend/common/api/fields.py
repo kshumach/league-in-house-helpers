@@ -1,5 +1,6 @@
 from typing import TypeVar, Generic
 
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 import enum
 
@@ -25,3 +26,14 @@ class EnumModelField(serializers.ChoiceField, Generic[M]):
 
     def to_representation(self, instance):
         return self._enum_reference(instance.value).name.lower().capitalize()
+
+
+# Custom field that extracts the user_id from a given user object.
+# Model serializers won't allow an override to an int field. Since the user field is a FK relation it expects a user
+# object. Just passing one fails due to requiring a PK value on save. Overriding it like so just skips all that
+class UserField(serializers.Field):
+    def to_internal_value(self, data):
+        return data
+
+    def to_representation(self, value):
+        return value.id

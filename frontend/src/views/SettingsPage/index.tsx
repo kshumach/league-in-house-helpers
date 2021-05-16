@@ -4,15 +4,18 @@ import { useLocation } from 'react-router-dom';
 import { InspectableObject } from '../../utils/types';
 import PasswordChangeForm from '../../components/PasswordChangeForm';
 import RolePreferencesForm from '../../components/RolePreferencesForm';
+import LinkAccountForm from '../../components/LinkAccountForm';
 
 enum TabOrdering {
   SETTINGS = 0,
   ROLE_PREFERENCES = 1,
+  LINK_ACCOUNT = 2,
 }
 
 const hashToSettingMap: { [key: string]: number } = {
   '#change-password': 0,
   '#role-preferences': 1,
+  '#link-account': 2,
   '': 0,
 };
 
@@ -60,12 +63,22 @@ export default function SettingsPage(): ReactElement {
             label="Role Preferences"
             role="tab"
           />
+          <Tab
+            aria-controls={`nav-tabpanel-${TabOrdering.LINK_ACCOUNT}`}
+            href="#link-account"
+            id={`nav-tabpanel-${TabOrdering.LINK_ACCOUNT}`}
+            label="Link Account"
+            role="tab"
+          />
         </Tabs>
         <TabPanel currentValue={selectedTab} index={TabOrdering.SETTINGS}>
           <PasswordChangeForm />
         </TabPanel>
         <TabPanel currentValue={selectedTab} index={TabOrdering.ROLE_PREFERENCES}>
           <RolePreferencesForm />
+        </TabPanel>
+        <TabPanel currentValue={selectedTab} index={TabOrdering.LINK_ACCOUNT}>
+          <LinkAccountForm />
         </TabPanel>
       </Paper>
     </Container>

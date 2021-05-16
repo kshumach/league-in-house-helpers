@@ -159,7 +159,6 @@ export default function PasswordChangeForm(): ReactElement {
               <TextField
                 autoFocus
                 required
-                aria-describedby="old-password-help-text"
                 error={!!formError}
                 id="old-password"
                 label="Old Password"
@@ -175,7 +174,6 @@ export default function PasswordChangeForm(): ReactElement {
               <TextField
                 autoFocus
                 required
-                aria-describedby="new-password-help-text"
                 error={!!formError}
                 id="new-password"
                 label="New Password"
@@ -190,7 +188,6 @@ export default function PasswordChangeForm(): ReactElement {
             <FormControl className={classes.formControl}>
               <TextField
                 required
-                aria-describedby="password-confirm-help-text"
                 error={!!formError}
                 id="password-confirm"
                 label="Confirm Password"

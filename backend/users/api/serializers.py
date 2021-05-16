@@ -4,6 +4,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 
 from backend.roles.api.serializers import UserRolePreferenceReadSerializer
+from backend.summoners.api.serializers import SummonerReadSerializer
 
 
 class UserWriteSerializer(serializers.ModelSerializer):
@@ -42,10 +43,11 @@ class UserWriteSerializer(serializers.ModelSerializer):
 
 class UserReadSerializer(serializers.ModelSerializer):
     preferred_roles = UserRolePreferenceReadSerializer(source="role_preferences")
+    summoners = SummonerReadSerializer(many=True, source="summoner_set")
 
     class Meta:
         model = get_user_model()
-        fields = ["id", "preferred_roles"]
+        fields = ["id", "preferred_roles", "summoners"]
 
 
 class UserListSerializer(serializers.Serializer):

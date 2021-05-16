@@ -5,7 +5,7 @@ import { Nullable } from '../../utils/types';
 import ErrorHandler from '../../components/ErrorHandler';
 
 export default function HomePage(): Nullable<ReactElement> {
-  const user = useUserContext();
+  const { user } = useUserContext();
 
   const [loading, data, error] = useApiClient<unknown>(RequestMethods.GET, 'users', null, {});
 
@@ -13,5 +13,5 @@ export default function HomePage(): Nullable<ReactElement> {
 
   if (error) return <ErrorHandler error={error} />;
 
-  return <div>Welcome {user.username}</div>;
+  return <div>Welcome {user?.inGameName}</div>;
 }

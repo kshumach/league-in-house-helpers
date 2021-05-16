@@ -11,6 +11,7 @@ import {
   MenuItem,
   Select,
   Theme,
+  Tooltip,
 } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
 import { AxiosError } from 'axios';
@@ -114,12 +115,35 @@ export default function RolePreferencesForm(): ReactElement {
       );
     }
 
+    const isDisabled = !hasMadeChange || !(primaryRole && secondaryRole && offRole);
+
+    if (isDisabled) {
+      const tooltipTitle = 'Must select all 3 preferences or have made a change to any of them.';
+
+      return (
+        <Tooltip arrow title={tooltipTitle}>
+          <span>
+            <Button
+              disabled
+              fullWidth
+              className={classes.submit}
+              color="primary"
+              type="submit"
+              variant="contained"
+              onClick={onSubmit}
+            >
+              Submit
+            </Button>
+          </span>
+        </Tooltip>
+      );
+    }
+
     return (
       <Button
         fullWidth
         className={classes.submit}
         color="primary"
-        disabled={!hasMadeChange}
         type="submit"
         variant="contained"
         onClick={onSubmit}
