@@ -1,0 +1,18 @@
+{
+  "exclude": ["node_modules", "**/*.spec.ts"],
+  "include": ["src/**/*"],
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "jsx": "react",
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "lib": ["es6", "dom"],
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "isolatedModules": true,
+    "strictFunctionTypes": true
+  }
+}
