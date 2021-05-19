@@ -24,7 +24,7 @@ const useStyles = makeStyles(({ spacing }: Theme) => ({
   },
 }));
 
-export default function NavBar({ children }: { children: ReactElement }): ReactElement {
+export default function NavBar({ children }: { children: ReactElement[] }): ReactElement {
   const [anchorEl, setAnchorRef] = useState<Nullable<HTMLButtonElement>>(null);
   const buttonRef = useRef(null);
 
@@ -62,12 +62,7 @@ export default function NavBar({ children }: { children: ReactElement }): ReactE
 
   return (
     <React.Fragment>
-      <Grid
-        container
-        className={classes.container}
-        component="nav"
-        justify="flex-end"
-      >
+      <Grid container className={classes.container} component="nav" justify="flex-end">
         <Grid item className={classes.settings} xs={1}>
           <Button
             ref={buttonRef}

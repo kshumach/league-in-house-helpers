@@ -123,3 +123,55 @@ export type PreferredRoles = {
   secondaryRole: Nullable<Role>;
   offRole: Nullable<Role>;
 };
+
+export enum Rankings {
+  S,
+  A,
+  B,
+  C,
+  D,
+  NOT_RATED = -1,
+}
+
+export enum RankingsDescriptions {
+  S = `
+  * excellent communication
+  * excellent map play
+  * excellent level of play
+  * excellent team effort
+  `,
+  A = `
+  * great communication
+  * great map play
+  * great level of play
+  * great team effort
+  `,
+  B = `
+  * good communication
+  * good map play
+  * good level of play
+  * good team effort
+  `,
+  C = `
+  * average communication
+  * average map play
+  * average level of play
+  * average team effort
+  `,
+  D = `
+  * basic communication
+  * basic map play
+  * basic level of play
+  * basic team effort
+  `
+}
+
+export interface Ballot {
+  /* eslint-disable camelcase */
+  // Nested in an array so camelizeKeys doesn't convert this
+  rated_by: number;
+  user_id: number;
+  ranking: Rankings;
+}
+
+export type RankingBallots = Array<Ballot>;

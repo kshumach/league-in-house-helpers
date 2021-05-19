@@ -3,6 +3,7 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 
+from backend.rankings.api.serializers import UserRankingsReadSerializer
 from backend.roles.api.serializers import UserRolePreferenceReadSerializer
 from backend.summoners.api.serializers import SummonerReadSerializer
 
@@ -44,23 +45,21 @@ class UserWriteSerializer(serializers.ModelSerializer):
 class UserReadSerializer(serializers.ModelSerializer):
     preferred_roles = UserRolePreferenceReadSerializer(source="role_preferences")
     summoners = SummonerReadSerializer(many=True, source="summoner_set")
+    ranking_ballots = UserRankingsReadSerializer(many=True)
 
     class Meta:
         model = get_user_model()
-        fields = ["id", "preferred_roles", "summoners"]
+        fields = ["id", "preferred_roles", "summoners", "ranking_ballots"]
 
 
-class UserListSerializer(serializers.Serializer):
-    users = serializers.SerializerMethodField()
+class UserListSerializer(serializers.ModelSerializer):
+    summoners = SummonerReadSerializer(many=True, source="summoner_set")
+    preferred_roles = UserRolePreferenceReadSerializer(source="role_preferences")
+    ranking_ballots = UserRankingsReadSerializer(many=True)
 
-    def get_users(self, _instance):
-        return [{"username": user.username} for user in self.instance]
-
-    def update(self, instance, validated_data):
-        pass
-
-    def create(self, validated_data):
-        pass
+    class Meta:
+        model = get_user_model()
+        fields = ["id", "username", "summoners", "preferred_roles", "ranking_ballots"]
 
 
 class PasswordChangeSerializer(serializers.Serializer):

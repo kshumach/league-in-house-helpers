@@ -42,13 +42,7 @@ export default function SettingsPage(): ReactElement {
   return (
     <Container maxWidth="md">
       <Paper>
-        <Tabs
-          centered
-          aria-label="settings"
-          role="tablist"
-          value={selectedTab}
-          onChange={onTabSelect}
-        >
+        <Tabs centered aria-label="settings" role="tablist" value={selectedTab} onChange={onTabSelect}>
           <Tab
             aria-controls={`nav-tabpanel-${TabOrdering.SETTINGS}`}
             href="#change-password"

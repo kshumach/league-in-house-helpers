@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { useEffect, useState } from 'react';
 import appConfig from '../config/app';
 import { ApiMethodReturnValue, InspectableObject, Left, Nullable } from './types';
-import { left, right, storeTokenPair } from './general';
+import { deleteStoredTokenPair, left, right, storeTokenPair } from './general';
 import { LoginRequiredError } from './errors';
 
 export const enum RequestMethods {
@@ -139,6 +139,13 @@ export default async function makeApiRequest<R>(
     // Auth header usage mean 401 was likely due to an expired token
     if (error.response?.status === 401 && withAuthHeader) {
       const response = await replayRequestWithTokenRefresh<R>(requestOptions);
+
+      // Token refresh failure likely means the user has either been deleted or something else. Force log in.
+      if (response instanceof Left) {
+        deleteStoredTokenPair();
+
+        return left(response.unsafeUnwrap());
+      }
 
       return response;
     }

@@ -32,8 +32,25 @@ class EnumModelField(serializers.ChoiceField, Generic[M]):
 # Model serializers won't allow an override to an int field. Since the user field is a FK relation it expects a user
 # object. Just passing one fails due to requiring a PK value on save. Overriding it like so just skips all that
 class UserField(serializers.Field):
+    def __init__(self, passes_in_id=False, lookup_model=None, **kwargs):
+        assert not (
+            passes_in_id and lookup_model is None
+        ), "Cannot initialize UserField with passes_in_id=True and no model specified. Specify the model to fetch " \
+           "the object from using lookup_model="
+
+        self._passes_in_id = passes_in_id
+        self._lookup_model = lookup_model
+
+        super().__init__(**kwargs)
+
     def to_internal_value(self, data):
-        return data
+        if self._passes_in_id:
+            return self._lookup_model.objects.get(id=data)
+        else:
+            return data
 
     def to_representation(self, value):
-        return value.id
+        if type(value) == int:
+            return value
+        else:
+            return value.id

@@ -14,6 +14,7 @@ import NavBar from '../../components/NavBar';
 import ErrorHandler from '../../components/ErrorHandler';
 import { NoRouteMatchError } from '../../utils/errors';
 import SettingsPage from '../SettingsPage';
+import RankingsPage from '../RankingsPage';
 
 export default function App(): ReactElement {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -52,20 +53,19 @@ export default function App(): ReactElement {
                   <LoginPage />
                 </RedirectIfLoggedIn>
               </Route>
-              <Route exact path="/">
-                <UserContextProvider handleErrors>
-                  <NavBar>
+              <UserContextProvider handleErrors>
+                <NavBar>
+                  <Route exact path="/">
                     <HomePage />
-                  </NavBar>
-                </UserContextProvider>
-              </Route>
-              <Route exact path="/settings">
-                <UserContextProvider handleErrors>
-                  <NavBar>
+                  </Route>
+                  <Route exact path="/settings">
                     <SettingsPage />
-                  </NavBar>
-                </UserContextProvider>
-              </Route>
+                  </Route>
+                  <Route exact path="/rankings">
+                    <RankingsPage />
+                  </Route>
+                </NavBar>
+              </UserContextProvider>
               <Route path="*">
                 <ErrorHandler error={new NoRouteMatchError()} />
               </Route>

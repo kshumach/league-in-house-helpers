@@ -1,6 +1,7 @@
 from requests import HTTPError
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, DestroyAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from backend.common.riot_client.client import RiotClient
@@ -11,6 +12,7 @@ from backend.summoners.models import Summoner
 
 class CreateSummonerView(CreateAPIView):
     serializer_class = SummonerWriteSerializer
+    permission_classes = (IsAuthenticated,)
 
     def create(self, request, *args, **kwargs):
         try:
@@ -40,3 +42,4 @@ class DestroySummonerView(DestroyAPIView):
     lookup_url_kwarg = "in_game_name"
     lookup_field = "in_game_name"
     queryset = Summoner.objects.all()
+    permission_classes = (IsAuthenticated,)

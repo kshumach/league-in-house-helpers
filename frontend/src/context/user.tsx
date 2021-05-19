@@ -3,7 +3,16 @@ import jwtDecode from 'jwt-decode';
 import { CircularProgress } from '@material-ui/core';
 import { Redirect, useLocation } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import { CustomJwtPayload, InspectableObject, Left, Nullable, Optional, PreferredRoles } from '../utils/types';
+import {
+  CustomJwtPayload, Either,
+  InspectableObject,
+  Left,
+  Nullable,
+  Optional,
+  PreferredRoles,
+  RankingBallots,
+  Rankings,
+} from '../utils/types';
 import { GenericContextConsumer, useGenericContextHelper } from '../utils/context-helpers';
 import makeApiRequest, { refreshAccessToken, RequestMethods } from '../utils/apiClient';
 import { camelizeKeys, hasStoredTokenPair } from '../utils/general';
@@ -13,6 +22,7 @@ export interface User extends InspectableObject {
   username: Nullable<string>;
   summoners: Array<string>;
   preferredRoles: PreferredRoles;
+  rankingBallots: RankingBallots;
 }
 
 function initializeUser(): User {
@@ -25,6 +35,7 @@ function initializeUser(): User {
       secondaryRole: null,
       offRole: null,
     },
+    rankingBallots: [],
   };
 }
 
@@ -34,12 +45,13 @@ export interface UserCtx {
   isFetchingUser: boolean;
   removeSummoner: (summonerName: string) => Promise<void>;
   addSummoner: (summonerName: string) => Promise<void>;
+  updateBallot: (targetUserId: number, ranking: Rankings, targetSummoner: string) => Promise<void>;
 }
 
 export type UserContextType = Optional<UserCtx>;
 
 type UserContextProps = {
-  children: ReactChild;
+  children: ReactElement | ReactElement[];
   handleErrors: boolean;
 };
 
@@ -114,8 +126,15 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
       return String(decoded.user_id);
     }
 
-    async function fetchUserData(userId: string): Promise<User> {
+    async function fetchUserData(userId: string): Promise<Nullable<User>> {
       const response = await makeApiRequest<User>(RequestMethods.GET, `users/${userId}`);
+
+      if (response instanceof Left) {
+        setError(response.unsafeUnwrap());
+        setLoginRequired(true);
+
+        return null;
+      }
 
       return response.isRight && response.unwrapOrThrow();
     }
@@ -126,6 +145,8 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
       if (userId === null) return;
 
       const userData = await fetchUserData(userId);
+
+      if (userData === null) return;
 
       dispatch({ type: UserReducerActions.INITIALIZE_USER_DATA, payload: camelizeKeys<User>(userData) });
       setHasLoaded(true);
@@ -164,6 +185,22 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
     dispatch({ type: UserReducerActions.ADD_SUMMONER, payload: summonerName });
   }
 
+  async function updateBallot(targetUserId: number, ranking: Rankings, targetSummoner: string): Promise<void> {
+    const response = await makeApiRequest(RequestMethods.PUT, 'rankings/rank', {
+      user_id: targetUserId,
+      rated_by: user.id,
+      ranking: Rankings[ranking],
+    });
+
+    if (response instanceof Left) {
+      enqueueSnackbar(`Failed to update ranking of ${targetSummoner}`, { variant: 'error' });
+
+      return;
+    }
+
+    enqueueSnackbar(`Successfully updated ranking of ${targetSummoner}`, { variant: 'success' });
+  }
+
   const renderContent = () => {
     if (!hasLoaded) return <CircularProgress />;
 
@@ -184,6 +221,7 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
         user,
         removeSummoner,
         addSummoner,
+        updateBallot,
         userError: error,
         isFetchingUser: !hasLoaded,
       }}

@@ -66,23 +66,12 @@ export default function LinkAccountForm(): ReactElement {
   };
 
   const renderSummonerRow = (ign: string) => (
-    <Grid
-      key={ign}
-      container
-      alignItems="center"
-      className={classes.summonerRow}
-      direction="row"
-    >
+    <Grid key={ign} container alignItems="center" className={classes.summonerRow} direction="row">
       <Grid item className={classes.summonerName} xs={8}>
         <Typography>{ign}</Typography>
       </Grid>
       <Grid item xs={4}>
-        <Button
-          color="secondary"
-          startIcon={<DeleteIcon />}
-          variant="contained"
-          onClick={() => onDeleteSummoner(ign)}
-        >
+        <Button color="secondary" startIcon={<DeleteIcon />} variant="contained" onClick={() => onDeleteSummoner(ign)}>
           Unlink
         </Button>
       </Grid>
