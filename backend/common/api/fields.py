@@ -33,10 +33,10 @@ class EnumModelField(serializers.ChoiceField, Generic[M]):
 # object. Just passing one fails due to requiring a PK value on save. Overriding it like so just skips all that
 class UserField(serializers.Field):
     def __init__(self, passes_in_id=False, lookup_model=None, **kwargs):
-        assert not (
-            passes_in_id and lookup_model is None
-        ), "Cannot initialize UserField with passes_in_id=True and no model specified. Specify the model to fetch " \
-           "the object from using lookup_model="
+        assert not (passes_in_id and lookup_model is None), (
+            "Cannot initialize UserField with passes_in_id=True and no model specified. Specify the model to fetch "
+            "the object from using lookup_model="
+        )
 
         self._passes_in_id = passes_in_id
         self._lookup_model = lookup_model

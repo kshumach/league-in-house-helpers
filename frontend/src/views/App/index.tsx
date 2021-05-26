@@ -15,6 +15,7 @@ import ErrorHandler from '../../components/ErrorHandler';
 import { NoRouteMatchError } from '../../utils/errors';
 import SettingsPage from '../SettingsPage';
 import RankingsPage from '../RankingsPage';
+import { HOME_PATH, LOGIN_PATH, RANKINGS_PATH, REGISTER_PATH, SETTINGS_PATH } from '../../utils/paths';
 
 export default function App(): ReactElement {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -43,25 +44,25 @@ export default function App(): ReactElement {
         <ErrorBoundary>
           <BrowserRouter basename="">
             <Switch>
-              <Route exact path="/register">
-                <RedirectIfLoggedIn to="/">
+              <Route exact path={REGISTER_PATH}>
+                <RedirectIfLoggedIn to={HOME_PATH}>
                   <RegisterPage />
                 </RedirectIfLoggedIn>
               </Route>
-              <Route exact path="/login">
-                <RedirectIfLoggedIn to="/">
+              <Route exact path={LOGIN_PATH}>
+                <RedirectIfLoggedIn to={HOME_PATH}>
                   <LoginPage />
                 </RedirectIfLoggedIn>
               </Route>
               <UserContextProvider handleErrors>
                 <NavBar>
-                  <Route exact path="/">
+                  <Route exact path={HOME_PATH}>
                     <HomePage />
                   </Route>
-                  <Route exact path="/settings">
+                  <Route exact path={SETTINGS_PATH}>
                     <SettingsPage />
                   </Route>
-                  <Route exact path="/rankings">
+                  <Route exact path={RANKINGS_PATH}>
                     <RankingsPage />
                   </Route>
                 </NavBar>

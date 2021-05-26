@@ -15,20 +15,63 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Role',
+            name="Role",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.CharField(choices=[('TOP', 'TOP'), ('JUNGLE', 'JUNGLE'), ('MID', 'MID'), ('MARKSMAN', 'MARKSMAN'), ('SUPPORT', 'SUPPORT')], max_length=16)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "value",
+                    models.CharField(
+                        choices=[
+                            ("TOP", "TOP"),
+                            ("JUNGLE", "JUNGLE"),
+                            ("MID", "MID"),
+                            ("MARKSMAN", "MARKSMAN"),
+                            ("SUPPORT", "SUPPORT"),
+                        ],
+                        max_length=16,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='UserRolePreference',
+            name="UserRolePreference",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('off_role', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='off_role_preferences', to='roles.role')),
-                ('primary_role', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='primary_preferences', to='roles.role')),
-                ('secondary_role', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='secondary_preferences', to='roles.role')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='role_preferences', to=settings.AUTH_USER_MODEL)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "off_role",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="off_role_preferences",
+                        to="roles.role",
+                    ),
+                ),
+                (
+                    "primary_role",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="primary_preferences",
+                        to="roles.role",
+                    ),
+                ),
+                (
+                    "secondary_role",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="secondary_preferences",
+                        to="roles.role",
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="role_preferences",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

@@ -14,7 +14,7 @@ class UserRankingsUpdateView(UpdateAPIView):
 
     def get_object(self):
         try:
-            target_user = get_user_model().objects.get(id=self.request.data['user_id'])
+            target_user = get_user_model().objects.get(id=self.request.data["user_id"])
             return UserRanking.objects.get(rated_by=self.request.user.id, user=target_user)
         except ObjectDoesNotExist:
             return None

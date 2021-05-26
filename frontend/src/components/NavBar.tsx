@@ -1,10 +1,13 @@
-import React, { ReactElement, useRef, useState } from 'react';
+import React, { forwardRef, ReactElement, RefObject, useMemo, useRef, useState } from 'react';
 import { Button, Grid, makeStyles, Menu, MenuItem, Theme } from '@material-ui/core';
-import { useHistory } from 'react-router-dom';
+import { Link, LinkProps, useHistory } from 'react-router-dom';
 import AccountCircle from '@material-ui/icons/AccountCircle';
+import HomeIcon from '@material-ui/icons/Home';
+import PollIcon from '@material-ui/icons/Poll';
 import { Nullable } from '../utils/types';
 import makeApiRequest, { RequestMethods } from '../utils/apiClient';
 import { deleteStoredTokenPair } from '../utils/general';
+import { RANKINGS_PATH, HOME_PATH } from '../utils/paths';
 
 const useStyles = makeStyles(({ spacing }: Theme) => ({
   container: {
@@ -12,17 +15,54 @@ const useStyles = makeStyles(({ spacing }: Theme) => ({
     minHeight: spacing(6),
     height: '100%',
     padding: spacing(0.5, 0.5),
-    marginBottom: spacing(2),
+    marginBottom: spacing(8),
     alignContent: 'center',
   },
   settings: {
     display: 'flex',
     justifyContent: 'flex-end',
+    marginLeft: 'auto',
   },
-  menuItem: {
-    width: '100%',
+  home: {
+    marginRight: 'auto',
+  },
+  sharedRight: {
+    marginRight: spacing(0),
+  },
+  sharedLeft: {
+    marginLeft: spacing(0),
+  },
+  navItems: {
+    marginRight: 'auto',
+    marginLeft: 'auto',
   },
 }));
+
+interface NavItemProps {
+  to: string;
+  icon: ReactElement;
+  children: string;
+}
+
+function NavItem(props: NavItemProps) {
+  const { to, icon, children } = props;
+
+  const renderLink = useMemo(
+    () =>
+      // eslint-disable-next-line react/display-name
+      forwardRef<unknown, Omit<LinkProps, 'to'>>((itemProps, ref) => (
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        <Link ref={ref as RefObject<HTMLAnchorElement>} to={to} {...itemProps} />
+      )),
+    [to]
+  );
+
+  return (
+    <Button color="default" component={renderLink} startIcon={icon}>
+      {children}
+    </Button>
+  );
+}
 
 export default function NavBar({ children }: { children: ReactElement[] }): ReactElement {
   const [anchorEl, setAnchorRef] = useState<Nullable<HTMLButtonElement>>(null);
@@ -63,6 +103,16 @@ export default function NavBar({ children }: { children: ReactElement[] }): Reac
   return (
     <React.Fragment>
       <Grid container className={classes.container} component="nav" justify="flex-end">
+        <Grid item className={classes.home} xs={1}>
+          <NavItem icon={<HomeIcon />} to={HOME_PATH}>
+            Home
+          </NavItem>
+        </Grid>
+        <Grid item className={classes.navItems} xs={1}>
+          <NavItem icon={<PollIcon />} to={RANKINGS_PATH}>
+            Rankings
+          </NavItem>
+        </Grid>
         <Grid item className={classes.settings} xs={1}>
           <Button
             ref={buttonRef}
@@ -70,7 +120,7 @@ export default function NavBar({ children }: { children: ReactElement[] }): Reac
             aria-controls="settings-menu"
             color="default"
             startIcon={<AccountCircle />}
-            variant="contained"
+            // variant="contained"
             onClick={onAccountOpen}
           >
             Account
