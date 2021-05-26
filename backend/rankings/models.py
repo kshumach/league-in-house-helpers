@@ -5,11 +5,11 @@ from django.db import models
 
 
 class RANKING(enum.Enum):
-    S = 1
-    A = 2
-    B = 3
-    C = 4
-    D = 5
+    S = "S"
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
 
     @staticmethod
     def as_tuple_list():
@@ -26,7 +26,7 @@ RANKINGS_DESCRIPTIONS = {
 
 
 class Ranking(models.Model):
-    value = models.PositiveSmallIntegerField(choices=RANKING.as_tuple_list())
+    value = models.CharField(max_length=4, choices=RANKING.as_tuple_list())
 
 
 class UserRanking(models.Model):

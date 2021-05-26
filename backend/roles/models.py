@@ -5,11 +5,11 @@ from django.db import models
 
 
 class ROLE(enum.Enum):
-    TOP = 1
-    JUNGLE = 2
-    MID = 3
-    MARKSMAN = 4
-    SUPPORT = 5
+    TOP = "TOP"
+    JUNGLE = "JUNGLE"
+    MID = "MID"
+    MARKSMAN = "MARKSMAN"
+    SUPPORT = "SUPPORT"
 
     @staticmethod
     def as_tuple_list():
@@ -17,7 +17,7 @@ class ROLE(enum.Enum):
 
 
 class Role(models.Model):
-    value = models.PositiveSmallIntegerField(choices=ROLE.as_tuple_list())
+    value = models.CharField(max_length=16, choices=ROLE.as_tuple_list())
 
 
 class UserRolePreference(models.Model):

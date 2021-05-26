@@ -31,21 +31,6 @@ class ListUserView(ListAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserListSerializer
 
-    # Temp hack to return the payload style I want. Need a custom serializer to handle this properly in the future
-    # Regular ListAPIView calls the serializer with many=True
-    # Ideally I'd like to just override how data is returned but there isn't an easy override path.
-    # ListAPIView calls self.get which immediately calls self.list :(
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset)
-        return Response(serializer.data)
-
 
 class RetrieveUserView(RetrieveAPIView):
     serializer_class = UserReadSerializer

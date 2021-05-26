@@ -22,12 +22,10 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
   }
 
   static getDerivedStateFromError(error: Error): InspectableObject {
-    // Update state so the next render will show the fallback UI.
     return { hasError: true, error };
   }
 
   componentDidCatch(errorObj: Error, errorInfo: ErrorInfo): void {
-    // You can also log the error to an error reporting service
     console.error(errorObj, errorInfo);
   }
 

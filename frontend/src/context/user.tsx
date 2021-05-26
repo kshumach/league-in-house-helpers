@@ -1,9 +1,19 @@
-import React, { ReactChild, ReactElement, useEffect, useReducer, useState } from 'react';
+import React, { ReactElement, useEffect, useReducer, useState } from 'react';
 import jwtDecode from 'jwt-decode';
 import { CircularProgress } from '@material-ui/core';
 import { Redirect, useLocation } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import { CustomJwtPayload, InspectableObject, Left, Nullable, Optional, PreferredRoles } from '../utils/types';
+import {
+  Ballot,
+  CustomJwtPayload,
+  InspectableObject,
+  Left,
+  Nullable,
+  Optional,
+  PreferredRoles,
+  RankingBallots,
+  Rankings,
+} from '../utils/types';
 import { GenericContextConsumer, useGenericContextHelper } from '../utils/context-helpers';
 import makeApiRequest, { refreshAccessToken, RequestMethods } from '../utils/apiClient';
 import { camelizeKeys, hasStoredTokenPair } from '../utils/general';
@@ -13,6 +23,7 @@ export interface User extends InspectableObject {
   username: Nullable<string>;
   summoners: Array<string>;
   preferredRoles: PreferredRoles;
+  rankingBallots: RankingBallots;
 }
 
 function initializeUser(): User {
@@ -25,6 +36,7 @@ function initializeUser(): User {
       secondaryRole: null,
       offRole: null,
     },
+    rankingBallots: [],
   };
 }
 
@@ -34,12 +46,13 @@ export interface UserCtx {
   isFetchingUser: boolean;
   removeSummoner: (summonerName: string) => Promise<void>;
   addSummoner: (summonerName: string) => Promise<void>;
+  updateBallot: (targetUserId: number, ranking: Rankings, targetSummoner: string) => Promise<void>;
 }
 
 export type UserContextType = Optional<UserCtx>;
 
 type UserContextProps = {
-  children: ReactChild;
+  children: ReactElement | ReactElement[];
   handleErrors: boolean;
 };
 
@@ -49,12 +62,14 @@ enum UserReducerActions {
   REMOVE_SUMMONER = 'REMOVE_SUMMONER',
   ADD_SUMMONER = 'ADD_SUMMONER',
   INITIALIZE_USER_DATA = 'INITIALIZE_USER_DATA',
+  UPDATE_BALLOT = 'UPDATE_BALLOT',
 }
 
 type UserReducerPayloadTypes = {
   [UserReducerActions.INITIALIZE_USER_DATA]: User;
   [UserReducerActions.REMOVE_SUMMONER]: string;
   [UserReducerActions.ADD_SUMMONER]: string;
+  [UserReducerActions.UPDATE_BALLOT]: Ballot;
 };
 
 function reducer(
@@ -71,6 +86,22 @@ function reducer(
       return {
         ...user,
         summoners: [...user.summoners, summonerToAdd],
+      };
+    }
+    case UserReducerActions.UPDATE_BALLOT: {
+      const currentBallots = user.rankingBallots;
+      const updatedBallot = action.payload as Ballot;
+      const targetUserId = updatedBallot.user_id;
+      // Preserve the ordering so the UI is consistent
+      const currentBallotIndex = currentBallots.findIndex((ballot: Ballot) => ballot.user_id === targetUserId);
+
+      return {
+        ...user,
+        rankingBallots: [
+          ...currentBallots.slice(0, currentBallotIndex),
+          updatedBallot,
+          ...currentBallots.slice(currentBallotIndex + 1),
+        ],
       };
     }
     case UserReducerActions.REMOVE_SUMMONER: {
@@ -114,8 +145,15 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
       return String(decoded.user_id);
     }
 
-    async function fetchUserData(userId: string): Promise<User> {
+    async function fetchUserData(userId: string): Promise<Nullable<User>> {
       const response = await makeApiRequest<User>(RequestMethods.GET, `users/${userId}`);
+
+      if (response instanceof Left) {
+        setError(response.unsafeUnwrap());
+        setLoginRequired(true);
+
+        return null;
+      }
 
       return response.isRight && response.unwrapOrThrow();
     }
@@ -126,6 +164,8 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
       if (userId === null) return;
 
       const userData = await fetchUserData(userId);
+
+      if (userData === null) return;
 
       dispatch({ type: UserReducerActions.INITIALIZE_USER_DATA, payload: camelizeKeys<User>(userData) });
       setHasLoaded(true);
@@ -164,6 +204,24 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
     dispatch({ type: UserReducerActions.ADD_SUMMONER, payload: summonerName });
   }
 
+  async function updateBallot(targetUserId: number, ranking: Rankings, targetSummoner: string): Promise<void> {
+    const response = await makeApiRequest<Ballot>(RequestMethods.PUT, 'rankings/rank', {
+      user_id: targetUserId,
+      rated_by: user.id,
+      ranking: Rankings[ranking],
+    });
+
+    if (response instanceof Left) {
+      enqueueSnackbar(`Failed to update ranking of ${targetSummoner}`, { variant: 'error' });
+
+      return;
+    }
+
+    dispatch({ type: UserReducerActions.UPDATE_BALLOT, payload: response.unsafeUnwrap() });
+
+    enqueueSnackbar(`Successfully updated ranking of ${targetSummoner}`, { variant: 'success' });
+  }
+
   const renderContent = () => {
     if (!hasLoaded) return <CircularProgress />;
 
@@ -184,6 +242,7 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
         user,
         removeSummoner,
         addSummoner,
+        updateBallot,
         userError: error,
         isFetchingUser: !hasLoaded,
       }}
