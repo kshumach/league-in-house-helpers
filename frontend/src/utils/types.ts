@@ -125,11 +125,11 @@ export type PreferredRoles = {
 };
 
 export enum Rankings {
-  S,
-  A,
-  B,
-  C,
-  D,
+  S = 'S',
+  A = 'A',
+  B = 'B',
+  C = 'C',
+  D = 'D',
   NOT_RATED = -1,
 }
 
@@ -163,7 +163,7 @@ export enum RankingsDescriptions {
   * basic map play
   * basic level of play
   * basic team effort
-  `
+  `,
 }
 
 export interface Ballot {

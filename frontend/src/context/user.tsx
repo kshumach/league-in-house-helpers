@@ -1,10 +1,11 @@
-import React, { ReactChild, ReactElement, useEffect, useReducer, useState } from 'react';
+import React, { ReactElement, useEffect, useReducer, useState } from 'react';
 import jwtDecode from 'jwt-decode';
 import { CircularProgress } from '@material-ui/core';
 import { Redirect, useLocation } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import {
-  CustomJwtPayload, Either,
+  Ballot,
+  CustomJwtPayload,
   InspectableObject,
   Left,
   Nullable,
@@ -61,12 +62,14 @@ enum UserReducerActions {
   REMOVE_SUMMONER = 'REMOVE_SUMMONER',
   ADD_SUMMONER = 'ADD_SUMMONER',
   INITIALIZE_USER_DATA = 'INITIALIZE_USER_DATA',
+  UPDATE_BALLOT = 'UPDATE_BALLOT',
 }
 
 type UserReducerPayloadTypes = {
   [UserReducerActions.INITIALIZE_USER_DATA]: User;
   [UserReducerActions.REMOVE_SUMMONER]: string;
   [UserReducerActions.ADD_SUMMONER]: string;
+  [UserReducerActions.UPDATE_BALLOT]: Ballot;
 };
 
 function reducer(
@@ -83,6 +86,22 @@ function reducer(
       return {
         ...user,
         summoners: [...user.summoners, summonerToAdd],
+      };
+    }
+    case UserReducerActions.UPDATE_BALLOT: {
+      const currentBallots = user.rankingBallots;
+      const updatedBallot = action.payload as Ballot;
+      const targetUserId = updatedBallot.user_id;
+      // Preserve the ordering so the UI is consistent
+      const currentBallotIndex = currentBallots.findIndex((ballot: Ballot) => ballot.user_id === targetUserId);
+
+      return {
+        ...user,
+        rankingBallots: [
+          ...currentBallots.slice(0, currentBallotIndex),
+          updatedBallot,
+          ...currentBallots.slice(currentBallotIndex + 1),
+        ],
       };
     }
     case UserReducerActions.REMOVE_SUMMONER: {
@@ -186,7 +205,7 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
   }
 
   async function updateBallot(targetUserId: number, ranking: Rankings, targetSummoner: string): Promise<void> {
-    const response = await makeApiRequest(RequestMethods.PUT, 'rankings/rank', {
+    const response = await makeApiRequest<Ballot>(RequestMethods.PUT, 'rankings/rank', {
       user_id: targetUserId,
       rated_by: user.id,
       ranking: Rankings[ranking],
@@ -197,6 +216,8 @@ function UserContextProvider({ children, handleErrors }: UserContextProps): Null
 
       return;
     }
+
+    dispatch({ type: UserReducerActions.UPDATE_BALLOT, payload: response.unsafeUnwrap() });
 
     enqueueSnackbar(`Successfully updated ranking of ${targetSummoner}`, { variant: 'success' });
   }

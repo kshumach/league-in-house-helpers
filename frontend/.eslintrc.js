@@ -16,7 +16,7 @@ module.exports = {
     'plugin:import/typescript',
     'prettier',
     'prettier/react',
-    "prettier/@typescript-eslint",
+    'prettier/@typescript-eslint',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {

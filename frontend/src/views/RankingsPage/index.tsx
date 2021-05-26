@@ -60,7 +60,7 @@ export default function RankingsPage(): ReactElement {
     const currentUserRankingBallots = coalesce(currentUser?.rankingBallots, []);
     const currentUserRankingOfThisUser = currentUserRankingBallots.find((ballot: Ballot) => ballot.user_id === id);
 
-    const rankingValue = currentUserRankingOfThisUser ? Rankings[currentUserRankingOfThisUser.ranking] : Rankings[-1];
+    const rankingValue = currentUserRankingOfThisUser ? Rankings[currentUserRankingOfThisUser.ranking] : '';
 
     const boundOnChange = (event: React.ChangeEvent<{ value: unknown }>) =>
       updateBallot(id as number, event.target.value as number, primarySummoner);

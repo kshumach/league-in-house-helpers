@@ -10,10 +10,7 @@ module.exports = merge(baseConfig, {
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
     contentBasePublicPath: '/',
-    historyApiFallback: true
+    historyApiFallback: true,
   },
-  plugins: [
-    ...baseConfig.plugins,
-    new EnvironmentPlugin({ NODE_ENV: 'development' })
-  ]
+  plugins: [...baseConfig.plugins, new EnvironmentPlugin({ NODE_ENV: 'development' })],
 });

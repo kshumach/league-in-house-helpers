@@ -31,7 +31,7 @@ module.exports = {
         test: /\.(ts|tsx)?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
-      }
+      },
     ],
   },
   resolve: {
@@ -40,7 +40,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
     new WebpackManifestPlugin(),
-    new HtmlWebpackPlugin({ title: 'In Houses UI', template: path.resolve(__dirname, 'src/index.html') })
+    new HtmlWebpackPlugin({ title: 'In Houses UI', template: path.resolve(__dirname, 'src/index.html') }),
   ],
   optimization: {
     runtimeChunk: 'single',
