@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -36,7 +37,7 @@ class UserWriteSerializer(serializers.ModelSerializer):
         if token is None or token == "":
             raise serializers.ValidationError("registration token is required.")
 
-        if token == "correct":
+        if token == settings.REGISTER_TOKEN:
             return token
 
         raise serializers.ValidationError("Invalid registration token.")
