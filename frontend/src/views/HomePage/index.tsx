@@ -13,6 +13,5 @@ export default function HomePage(): Nullable<ReactElement> {
 
   if (error) return <ErrorHandler error={error} />;
 
-  console.log(data);
   return <div>Welcome {user?.inGameName}</div>;
 }

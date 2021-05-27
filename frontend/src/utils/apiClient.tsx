@@ -69,7 +69,6 @@ export async function refreshAccessToken(): Promise<ApiMethodReturnValue<NonNull
     return right(data);
   } catch (error) {
     if (error.response?.status === 401) {
-      console.log('HREE');
       return left(new LoginRequiredError());
     }
 
