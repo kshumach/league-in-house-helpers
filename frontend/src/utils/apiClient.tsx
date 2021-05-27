@@ -51,7 +51,7 @@ export async function refreshAccessToken(): Promise<ApiMethodReturnValue<NonNull
     return left(new LoginRequiredError());
   }
 
-  const url = `${appConfig.API_ULR}/api/users/token/refresh`;
+  const url = `${appConfig.API_URL}/api/users/token/refresh`;
   const requestOptions = {
     method: RequestMethods.POST,
     url,
@@ -118,7 +118,7 @@ export default async function makeApiRequest<R>(
   options: ApiClientOptions = {},
   { withAuthHeader = true }: MakeApiRequestOptions = {}
 ): Promise<ApiMethodReturnValue<R>> {
-  const apiUrl = options.apiUrl || appConfig.API_ULR;
+  const apiUrl = options.apiUrl || appConfig.API_URL;
   const requestOptions = {
     method,
     url: `${apiUrl}/api/${path}`,
