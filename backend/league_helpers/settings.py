@@ -238,3 +238,8 @@ CORS_ALLOWED_ORIGINS = DEV_DOMAINS if ENV == "development" else production_domai
 # ========== Riot API ==========
 
 RIOT_API_KEY = get_from_env("RIOT_API_KEY", raise_on_missing=True)
+
+
+# ========== Miscellaneous ==========
+
+REGISTER_TOKEN = get_from_env("REGISTER_TOKEN", raise_on_missing=True)
