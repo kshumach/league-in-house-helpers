@@ -1,0 +1,2 @@
+run:
+  web: cd backend && python manage.py runserver
