@@ -34,10 +34,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DOTENV_PATH = os.path.join(BASE_DIR, ".env")
 SECRETS_DOTENV_PATH = os.path.join(BASE_DIR, "secrets.env")
 
-if os.path.exists(DOTENV_PATH):
+ENV = get_from_env("ENV", default="development", lower_case=True)
+
+if os.path.exists(DOTENV_PATH) and ENV == "development":
     dotenv.load_dotenv(DOTENV_PATH, verbose=True, override=True)
 
-if os.path.exists(SECRETS_DOTENV_PATH):
+if os.path.exists(SECRETS_DOTENV_PATH) and ENV == "development":
     dotenv.load_dotenv(SECRETS_DOTENV_PATH, verbose=True, override=True)
 
 # Quick-start development settings - unsuitable for production
@@ -45,8 +47,6 @@ if os.path.exists(SECRETS_DOTENV_PATH):
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_from_env("SECRET_KEY", raise_on_missing=True)
-
-ENV = get_from_env("ENV", default="development", lower_case=True)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if ENV == "development" else False
@@ -155,11 +155,11 @@ LOGGING = {
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "in_houses",
-        "USER": get_from_env("DB_USER", raise_on_missing=True),
-        "PASSWORD": get_from_env("DB_PASSWORD", raise_on_missing=True),
-        "HOST": get_from_env("DB_HOST", raise_on_missing=True),
-        "PORT": get_from_env("DB_PORT", raise_on_missing=True),
+        "NAME": get_from_env("DATABASE_NAME", default="in_houses"),
+        "USER": get_from_env("DATABASE_USER", raise_on_missing=True),
+        "PASSWORD": get_from_env("DATABASE_PASSWORD", raise_on_missing=True),
+        "HOST": get_from_env("DATABASE_HOST", raise_on_missing=True),
+        "PORT": get_from_env("DATABASE_PORT", raise_on_missing=True),
     }
 }
 
