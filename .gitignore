@@ -6,3 +6,4 @@ Scripts
 __pycache__
 .pyc
 secrets
+bin
