@@ -1,3 +1,0 @@
-release: python manage.py migrate
-run:
-  web: cd backend && python manage.py runserver
