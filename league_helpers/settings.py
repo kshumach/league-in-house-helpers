@@ -232,7 +232,7 @@ DEV_DOMAINS = [
     "http://127.0.0.1:8080",
 ]
 
-CORS_ALLOWED_ORIGINS = DEV_DOMAINS if ENV == "development" else production_domain()
+CORS_ALLOWED_ORIGINS = DEV_DOMAINS if ENV == "development" else []
 
 
 # ========== Riot API ==========
