@@ -233,7 +233,7 @@ DEV_DOMAINS = [
 ]
 
 PROD_DOMAINS = [
-    "https://league-in-houses-ui.herokuapp.com/"
+    "https://league-in-houses-ui.herokuapp.com"
 ]
 
 CORS_ALLOWED_ORIGINS = DEV_DOMAINS if ENV == "development" else PROD_DOMAINS
