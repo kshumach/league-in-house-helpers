@@ -16,6 +16,15 @@ class RANKING(enum.Enum):
         return list(map(lambda r: (r.name, r.value), RANKING))
 
 
+RANKING_WEIGHT = {
+    "S": 9,
+    "A": 7,
+    "B": 5,
+    "C": 3,
+    "D": 1,
+    "": None
+}
+
 RANKINGS_DESCRIPTIONS = {
     RANKING.S: "",
     RANKING.A: "",

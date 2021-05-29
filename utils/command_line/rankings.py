@@ -1,6 +1,6 @@
 import click
 
-from rankings_parser import parse_rankings
+from utils.rankings_parser import parse_rankings
 
 """
 Script to calculate average scores for each player based off a csv of ratings provided.
