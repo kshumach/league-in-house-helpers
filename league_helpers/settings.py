@@ -232,7 +232,11 @@ DEV_DOMAINS = [
     "http://127.0.0.1:8080",
 ]
 
-CORS_ALLOWED_ORIGINS = DEV_DOMAINS if ENV == "development" else []
+PROD_DOMAINS = [
+    "https://league-in-houses-ui.herokuapp.com/"
+]
+
+CORS_ALLOWED_ORIGINS = DEV_DOMAINS if ENV == "development" else PROD_DOMAINS
 
 
 # ========== Riot API ==========
