@@ -18,6 +18,8 @@ from django.core.exceptions import ImproperlyConfigured
 
 from datetime import timedelta
 
+import dj_database_url
+
 
 def get_from_env(key: str, default=None, raise_on_missing=False, lower_case=False) -> str:
     val = os.getenv(key, default)
@@ -155,7 +157,6 @@ LOGGING = {
 # ========== Database ==========
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-# TODO: Need to use DATABASE_URL for prod
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -166,6 +167,10 @@ DATABASES = {
         "PORT": get_from_env("DATABASE_PORT", raise_on_missing=True),
     }
 }
+
+if ENV == "production":
+    DATABASES['default'] = dj_database_url.config(conn_max_age=600)
+
 
 # ========== Password validation ==========
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
