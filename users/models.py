@@ -16,6 +16,9 @@ def average_from(values) -> float:
 
 
 def std_dev_from(values) -> float:
+    if len(values) < 2:
+        return 0
+
     return statistics.stdev(values)
 
 
@@ -59,6 +62,7 @@ class User(AbstractUser):
 
         return average_from(rankings)
 
+    @property
     def average_ranking_adjusted(self, rankings=None):
         rankings = self._rankings() if rankings is None else rankings
 
