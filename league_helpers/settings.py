@@ -155,6 +155,7 @@ LOGGING = {
 # ========== Database ==========
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# TODO: Need to use DATABASE_URL for prod
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
