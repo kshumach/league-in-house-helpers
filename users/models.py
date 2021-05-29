@@ -26,6 +26,13 @@ class User(AbstractUser):
     def _rankings(self) -> List[int]:
         return [RANKING_WEIGHT[ranking[0]] for ranking in self.rankings.values_list('ranking__value')]
 
+    @property
+    def primary_summoner_name(self):
+        if not self.summoner_set.exists():
+            return None
+        else:
+            return self.summoner_set.first().in_game_name
+
     """
     Utility method to compare rankings of users.
     

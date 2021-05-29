@@ -1,11 +1,8 @@
-from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from summoners.models import Summoner
-from .models import User
 
 
-@admin.register(User)
 class CustomUserAdmin(UserAdmin):
     list_display = ('username', 'primary_summoner', 'average_ranking_adjusted', 'last_name', 'is_staff')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
