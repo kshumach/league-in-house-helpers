@@ -53,6 +53,9 @@ DEBUG = True if ENV == "development" else False
 
 ALLOWED_HOSTS = []
 
+if ENV != "development" and not DEBUG:
+    ALLOWED_HOSTS.append("league-in-houses-ui.herokuapp.com")
+
 
 def production_domain() -> str:
     return get_from_env("PRODUCTION_DOMAIN", None, raise_on_missing=True)
