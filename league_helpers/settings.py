@@ -55,8 +55,8 @@ DEBUG = True if ENV == "development" else False
 
 ALLOWED_HOSTS = []
 
-if ENV != "development" and not DEBUG:
-    ALLOWED_HOSTS.append("league-in-houses-ui.herokuapp.com")
+if ENV == "production":
+    ALLOWED_HOSTS.append("league-in-houses.herokuapp.com")
 
 
 def production_domain() -> str:
