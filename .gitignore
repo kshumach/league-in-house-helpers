@@ -1,9 +1,11 @@
 lib/
-bin/
 .idea
 pyvenv.cfg
 Include
 Scripts
+Lib
 __pycache__
 .pyc
 secrets
+bin
+secrets.env
