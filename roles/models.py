@@ -3,6 +3,14 @@ import enum
 from django.conf import settings
 from django.db import models
 
+ROLE_MULTIPLIER = {
+    "primary": 1,
+    "secondary": 0.85,
+    "off": 0.65,
+    # Autofill
+    None: 0.4
+}
+
 
 class ROLE(enum.Enum):
     TOP = "TOP"

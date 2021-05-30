@@ -1,22 +1,15 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.db.models import Subquery, F, OuterRef
 from django.http import HttpResponse
 from django.views import View
 from django.views.generic import FormView
 from rest_framework import status
 
-from summoners.models import Summoner
+from matchmaker.util.matchmaker import MatchMaker, AttemptsExhaustionException
 
 
 class PlayerSelectorForm(forms.Form):
-    players = forms.ModelMultipleChoiceField(
-        queryset=get_user_model()
-        .objects.annotate(
-            primary_summoner_name=Subquery(Summoner.objects.filter(user=OuterRef("pk")).values("in_game_name")[:1])
-        )
-        .values_list("id", "primary_summoner_name"),
-    )
+    players = forms.ModelMultipleChoiceField(queryset=get_user_model().objects.all())
 
 
 class PlayerSelectorView(FormView):
@@ -26,14 +19,25 @@ class PlayerSelectorView(FormView):
 
 class MatchmakerView(View):
     def dispatch(self, request, *args, **kwargs):
-        min_required_players = 10
-        player_id_and_in_game_names = request.GET.getlist("players")
+        min_required_players = 3
+        player_ids = request.GET.getlist("players")
 
-        if len(player_id_and_in_game_names) < min_required_players:
+        if len(player_ids) < min_required_players:
             content = (
-                f"Must select at least {min_required_players} players. Got {len(player_id_and_in_game_names)} instead."
+                f"Must select at least {min_required_players} players. Got {len(player_ids)} instead."
             )
 
             return HttpResponse(status=status.HTTP_422_UNPROCESSABLE_ENTITY, content=content)
 
-        return HttpResponse(request.GET.getlist("players"))
+        players = get_user_model().objects.filter(id__in=player_ids)
+
+        matchmaker = MatchMaker(list(players))
+
+        try:
+            team_a, team_b = matchmaker.matchmake()
+
+            content = f"Team A: {str(team_a)} \n\nTeam B: {str(team_b)}"
+
+            return HttpResponse(status=status.HTTP_200_OK, content=content)
+        except AttemptsExhaustionException as e:
+            return HttpResponse(status=status.HTTP_422_UNPROCESSABLE_ENTITY, content=e.message)

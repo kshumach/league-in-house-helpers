@@ -6,6 +6,7 @@ from typing import List
 from django.contrib.auth.models import AbstractUser
 
 from rankings.models import RANKING_WEIGHT
+from roles.models import ROLE, ROLE_MULTIPLIER
 
 
 def average_from(values) -> float:
@@ -29,7 +30,7 @@ class User(AbstractUser):
     @property
     def primary_summoner_name(self):
         if not self.summoner_set.exists():
-            return None
+            return self.username
         else:
             return self.summoner_set.first().in_game_name
 
@@ -43,8 +44,8 @@ class User(AbstractUser):
     Returns -1 if this user has a lower ranking.
     """
     def compare_ranking_to(self, other: User) -> int:
-        this_user_ranking = round(self.average_ranking_adjusted(), 1)
-        other_user_ranking = round(other.average_ranking_adjusted(), 1)
+        this_user_ranking = round(self.average_ranking_adjusted, 1)
+        other_user_ranking = round(other.average_ranking_adjusted, 1)
 
         if this_user_ranking == other_user_ranking:
             return 0
@@ -59,7 +60,7 @@ class User(AbstractUser):
         name = f"{self.summoner_set.first().in_game_name}: "
         avg = f"avg={self.average_ranking(rankings=rankings)}. "
         std_dev = f"std_dev={std_dev_from(rankings)}. "
-        avg_with_std_dev = f"avg_with_std_dev: {self.average_ranking_adjusted(rankings=rankings)}. "
+        avg_with_std_dev = f"avg_with_std_dev: {self._average_ranking_adjusted(rankings=rankings)}. "
         ratings = f"ratings={rankings}"
 
         return f"{name}{avg_with_std_dev}{avg}{std_dev}{ratings}"
@@ -69,8 +70,8 @@ class User(AbstractUser):
 
         return average_from(rankings)
 
-    @property
-    def average_ranking_adjusted(self, rankings=None):
+    # Internal utility to avoid recomputes
+    def _average_ranking_adjusted(self, rankings=None):
         rankings = self._rankings() if rankings is None else rankings
 
         if len(rankings) == 0:
@@ -83,3 +84,36 @@ class User(AbstractUser):
 
             filtered_ratings = [ranking for ranking in rankings if (upper_bound >= ranking >= lower_bound)]
             return round(sum(filtered_ratings) / len(filtered_ratings), 2)
+
+    @property
+    def average_ranking_adjusted(self):
+        rankings = self._rankings()
+
+        if len(rankings) == 0:
+            return 0
+        else:
+            std_dev = std_dev_from(rankings)
+            unfiltered_average = average_from(rankings)
+            lower_bound = unfiltered_average - std_dev
+            upper_bound = unfiltered_average + std_dev
+
+            filtered_ratings = [ranking for ranking in rankings if (upper_bound >= ranking >= lower_bound)]
+            return round(sum(filtered_ratings) / len(filtered_ratings), 2)
+
+    def preference_for_role(self, role: ROLE):
+        if not hasattr(self, 'role_preferences'):
+            return None
+
+        if self.role_preferences.primary_role.value == role.value:
+            role_type_for_user = "primary"
+        elif self.role_preferences.secondary_role.value == role.value:
+            role_type_for_user = "secondary"
+        elif self.role_preferences.off_role.value == role.value:
+            role_type_for_user = "off"
+        else:
+            role_type_for_user = None
+
+        return role_type_for_user
+
+    def average_ranking_adjusted_for_role(self, role: ROLE):
+        return round(self.average_ranking_adjusted * ROLE_MULTIPLIER[self.preference_for_role(role)], 1)
