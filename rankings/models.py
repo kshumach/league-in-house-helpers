@@ -16,6 +16,15 @@ class RANKING(enum.Enum):
         return list(map(lambda r: (r.name, r.value), RANKING))
 
 
+RANKING_WEIGHT = {
+    "S": 9,
+    "A": 7,
+    "B": 5,
+    "C": 3,
+    "D": 1,
+    "": None
+}
+
 RANKINGS_DESCRIPTIONS = {
     RANKING.S: "",
     RANKING.A: "",
@@ -23,6 +32,8 @@ RANKINGS_DESCRIPTIONS = {
     RANKING.C: "",
     RANKING.D: "",
 }
+
+DEFAULT_RANKING = 4
 
 
 class Ranking(models.Model):
@@ -35,3 +46,6 @@ class UserRanking(models.Model):
     rated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, related_name="ranking_ballots", on_delete=models.SET_NULL
     )
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "rated_by"], name="unique_rating_per_user")]

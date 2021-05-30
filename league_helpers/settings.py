@@ -66,7 +66,8 @@ def production_domain() -> str:
 # ========== Application definition ==========
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    # "django.contrib.admin",
+    "league_helpers.apps.LeagueHelpersAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -82,6 +83,7 @@ INSTALLED_APPS = [
     "summoners",
     "rankings",
     "roles",
+    "matchmaker"
 ]
 
 MIDDLEWARE = [

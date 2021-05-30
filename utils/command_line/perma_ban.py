@@ -1,6 +1,6 @@
-import random
-
 import click
+
+from utils.perma_banner import ban_from
 
 
 @click.command()
@@ -11,13 +11,9 @@ def run(ban_list):
     parsed_ban_list = ban_list.split(",")
     click.secho(f"Banning from: {str(parsed_ban_list)}")
 
-    while True:
-        if len(parsed_ban_list) == 1:
-            click.secho(f"Banned champ: {parsed_ban_list[0]}", fg="red")
-            break
-        else:
-            index_to_remove = random.randrange(0, len(parsed_ban_list))
-            del parsed_ban_list[index_to_remove]
+    banned = ban_from(parsed_ban_list)
+
+    click.secho(f"Banned champ: {banned}", fg="red")
 
 
 if __name__ == "__main__":
