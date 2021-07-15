@@ -5,7 +5,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 
 from rankings.api.serializers import UserRankingsReadSerializer
-from roles.api.serializers import UserRolePreferenceReadSerializer
+from roles.api.serializers import UserLeagueRolePreferenceReadSerializer
 from summoners.api.serializers import SummonerReadSerializer
 from valorant_accounts.api.serializers import ValorantAccountReadSerializer
 
@@ -45,7 +45,7 @@ class UserWriteSerializer(serializers.ModelSerializer):
 
 
 class UserReadSerializer(serializers.ModelSerializer):
-    preferred_roles = UserRolePreferenceReadSerializer(source="role_preferences")
+    preferred_roles = UserLeagueRolePreferenceReadSerializer(source="role_preferences")
     summoners = SummonerReadSerializer(many=True, source="summoner_set")
     ranking_ballots = UserRankingsReadSerializer(many=True)
     valorant_accounts = ValorantAccountReadSerializer(many=True, source="valorantaccount_set")
@@ -58,7 +58,7 @@ class UserReadSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     summoners = SummonerReadSerializer(many=True, source="summoner_set")
     valorant_accounts = ValorantAccountReadSerializer(many=True, source="valorantaccount_set")
-    preferred_roles = UserRolePreferenceReadSerializer(source="role_preferences")
+    preferred_roles = UserLeagueRolePreferenceReadSerializer(source="role_preferences")
     ranking_ballots = UserRankingsReadSerializer(many=True)
 
     class Meta:

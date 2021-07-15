@@ -16,6 +16,15 @@ class RANKING(enum.Enum):
         return list(map(lambda r: (r.name, r.value), RANKING))
 
 
+class RANKING_TYPE(enum.Enum):
+    LEAGUE = "LEAGUE"
+    VALORANT = "VALORANT"
+
+    @staticmethod
+    def as_tuple_list():
+        return list(map(lambda r: (r.name, r.value), RANKING_TYPE))
+
+
 RANKING_WEIGHT = {
     "S": 9,
     "A": 7,
@@ -36,6 +45,10 @@ RANKINGS_DESCRIPTIONS = {
 DEFAULT_RANKING = 4
 
 
+class RankingType(models.Model):
+    value = models.CharField(max_length=20, choices=RANKING_TYPE.as_tuple_list())
+
+
 class Ranking(models.Model):
     value = models.CharField(max_length=4, choices=RANKING.as_tuple_list())
 
@@ -46,6 +59,7 @@ class UserRanking(models.Model):
     rated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, related_name="ranking_ballots", on_delete=models.SET_NULL
     )
+    ranking_type = models.ForeignKey(RankingType, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["user", "rated_by"], name="unique_rating_per_user")]

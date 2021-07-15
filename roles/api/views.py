@@ -3,17 +3,17 @@ from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.generics import UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from roles.api.serializers import UserRolePreferenceWriteSerializer
-from roles.models import UserRolePreference
+from roles.api.serializers import UserLeagueRolePreferenceWriteSerializer
+from roles.models import UserLeagueRolePreference
 
 
-class UserRolePreferenceUpdateView(UpdateAPIView):
-    serializer_class = UserRolePreferenceWriteSerializer
+class UserLeagueRolePreferenceUpdateView(UpdateAPIView):
+    serializer_class = UserLeagueRolePreferenceWriteSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         try:
-            return UserRolePreference.objects.get(user_id=self.request.user.id)
+            return UserLeagueRolePreference.objects.get(user_id=self.request.user.id)
         except ObjectDoesNotExist:
             return None
 

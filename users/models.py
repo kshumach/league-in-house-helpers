@@ -6,7 +6,7 @@ from typing import List
 from django.contrib.auth.models import AbstractUser
 
 from rankings.models import RANKING_WEIGHT
-from roles.models import ROLE, ROLE_MULTIPLIER
+from roles.models import LEAGUE_ROLE, ROLE_MULTIPLIER
 
 
 def average_from(values) -> float:
@@ -100,7 +100,7 @@ class User(AbstractUser):
             filtered_ratings = [ranking for ranking in rankings if (upper_bound >= ranking >= lower_bound)]
             return round(sum(filtered_ratings) / len(filtered_ratings), 2)
 
-    def preference_for_role(self, role: ROLE):
+    def preference_for_role(self, role: LEAGUE_ROLE):
         if not hasattr(self, 'role_preferences'):
             return None
 
@@ -115,5 +115,5 @@ class User(AbstractUser):
 
         return role_type_for_user
 
-    def average_ranking_adjusted_for_role(self, role: ROLE):
+    def average_ranking_adjusted_for_role(self, role: LEAGUE_ROLE):
         return round(self.average_ranking_adjusted * ROLE_MULTIPLIER[self.preference_for_role(role)], 1)

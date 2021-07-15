@@ -1,5 +1,5 @@
 from django.db import migrations
-from roles.models import ROLE
+from roles.models import LEAGUE_ROLE
 
 
 def populate_roles_enum(apps, schema_editor):
@@ -8,7 +8,7 @@ def populate_roles_enum(apps, schema_editor):
 
     model = apps.get_model("roles", "Role")
 
-    for role in ROLE:
+    for role in LEAGUE_ROLE:
         new_role = model.objects.create(value=role.value)
         new_role.save()
 

@@ -1,7 +1,7 @@
 from django.urls import path
 
-from roles.api.views import UserRolePreferenceUpdateView
+from roles.api.views import UserLeagueRolePreferenceUpdateView
 
 urlpatterns = [
-    path("preferences", UserRolePreferenceUpdateView.as_view(), name="update_user_roles"),
+    path("league_preferences", UserLeagueRolePreferenceUpdateView.as_view(), name="update_user_league_roles"),
 ]
