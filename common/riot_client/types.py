@@ -6,3 +6,9 @@ class SummonerResponseType(TypedDict):
     accountId: str
     puuid: str
     name: str
+
+
+class ValorantAccountResponseType(TypedDict):
+    puuid: str
+    tagLine: str
+    gameName: str
