@@ -1,9 +1,10 @@
 import random
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
+from common.api.enums import GAME_OPTIONS
 from matchmaker.util.team import Team
-from rankings.models import DEFAULT_RANKING
-from roles.models import LEAGUE_ROLE, ROLE_MULTIPLIER
+from rankings.models import DEFAULT_RANKING, RankingType
+from roles.models import LEAGUE_ROLE
 from users.models import User
 
 
@@ -28,7 +29,7 @@ class UnMatchableStateException(Exception):
         self.message = message
 
 
-class MatchMaker:
+class LeagueMatchMaker:
     def __init__(self, players: List[User]):
         assert len(players) == 10, "Cannot match make with less than 10 players"
 
@@ -41,12 +42,12 @@ class MatchMaker:
 
     def _build_starting_dataset(self):
         for player in self._players:
-            player_rankings = player.rankings.all()
+            player_rankings = player.rankings.filter(ranking_type=RankingType.objects.get(value=GAME_OPTIONS.LEAGUE.value))
 
             if len(player_rankings) < 2:
                 self._player_rankings_map[player.username] = DEFAULT_RANKING
             else:
-                self._player_rankings_map[player.username] = player.average_ranking_adjusted
+                self._player_rankings_map[player.username] = player.average_league_ranking_adjusted
 
     def _get_complete_pool_for_role(self, role: LEAGUE_ROLE, from_player_pool=None) -> List[User]:
         primary_pool = self._get_primary_pool(role, from_player_pool=from_player_pool)
@@ -93,8 +94,8 @@ class MatchMaker:
     """
 
     def _get_matchup_skew(self, matchup: Matchup, role: LEAGUE_ROLE) -> Tuple[float, Matchup]:
-        first_user_rating = matchup[0].average_ranking_adjusted_for_role(role)
-        second_user_rating = matchup[1].average_ranking_adjusted_for_role(role)
+        first_user_rating = matchup[0].average_league_ranking_adjusted_for_role(role)
+        second_user_rating = matchup[1].average_league_ranking_adjusted_for_role(role)
 
         skew = first_user_rating - second_user_rating
 
@@ -138,7 +139,73 @@ class MatchMaker:
         sorted_matchups_by_skew = sorted(matchups_with_skew, key=lambda m: abs(m[0]))
 
         return sorted_matchups_by_skew[0]
+
+    """
+    Performs the main matchmaking loop based off the current teams, remaining player pool and remaining roles to fill.
     
+    Updates teams in line, returns updated player pool and roles to fill.
+    """
+    def _matchmake(self, team_a: Team, team_b: Team, player_pool: list[User], roles_to_fill: list[LEAGUE_ROLE]) -> Tuple[list[User], list[LEAGUE_ROLE]]:
+        if len(player_pool) == 2:
+            # Last loop, we can skip some things. We know that there is only one more role to fill
+            role_to_fill = roles_to_fill[0]
+
+            # We also know the player pool is just two players
+            complete_pool = player_pool
+        else:
+            # Pick a random roll to fill
+            try:
+                role_to_fill = roles_to_fill[random.randint(0, len(roles_to_fill) - 1)]
+            except ValueError as e:
+                raise e
+
+            primary_pool = self._get_primary_pool(role_to_fill, from_player_pool=player_pool)
+            secondary_pool = self._get_secondary_pool(role_to_fill, from_player_pool=player_pool)
+            off_pool = self._get_off_pool(role_to_fill, from_player_pool=player_pool)
+
+            complete_pool = primary_pool + secondary_pool + off_pool
+
+            if len(complete_pool) == 0:
+                raise EmptyPoolException()
+
+        current_team_skew = team_a.get_average_team_rating() - team_b.get_average_team_rating()
+
+        picked_matchup_with_skew = self._find_best_matchup_from_pool(complete_pool, role_to_fill)
+
+        picked_matchup_skew = picked_matchup_with_skew[0]
+        picked_matchup = picked_matchup_with_skew[1]
+
+        # Start by assigning arbitrarily. We will swap if needed to account for current team skew
+        team_a_player = picked_matchup[0]
+        team_b_player = picked_matchup[1]
+
+        if current_team_skew == 0:
+            # Empty teams or evenly matched. Just use the matchup as is
+            pass
+        elif current_team_skew < 0:
+            # team a is weaker. Let's make sure they get the player favoured in the matchup
+            if picked_matchup_skew < 0:
+                # If the matchup skew is negative that means the right player had a better ranking
+                team_a_player, team_b_player = team_b_player, team_a_player
+        else:
+            # team b is weaker. Let's make sure they get the player favoured in the matchup
+            if picked_matchup_skew > 0:
+                # If the matchup skew is positive that means the left player had a better ranking
+                team_a_player, team_b_player = team_b_player, team_a_player
+
+        team_a.add_role(role_to_fill, team_a_player)
+        team_b.add_role(role_to_fill, team_b_player)
+
+        # Remove players from player pool and roles from roles to fill
+        selected_players_usernames = [team_a_player.username, team_b_player.username]
+
+        player_pool = [player for player in player_pool if
+                       player.username not in selected_players_usernames]
+
+        roles_to_fill = [r for r in roles_to_fill if r.value != role_to_fill.value]
+
+        return player_pool, roles_to_fill
+
     def matchmake(self) -> Tuple[Team, Team]:
         self._raise_for_unmatchable_dataset()
 
@@ -156,73 +223,9 @@ class MatchMaker:
 
             try:
                 while len(player_pool) > 0:
-                    role_to_fill = None
-                    complete_pool = None
-                    current_team_skew = None
-                    picked_matchup_with_skew = None
-                    picked_matchup_skew = None
-                    picked_matchup = None
-                    team_a_player = None
-                    team_b_player = None
-                    selected_players_usernames = None
-
-                    if len(player_pool) == 2:
-                        # Last loop, we can skip some things. We know that there is only one more role to fill
-                        role_to_fill = roles_to_fill[0]
-
-                        # We also know the player pool is just two players
-                        complete_pool = player_pool
-                    else:
-                        # Pick a random roll to fill
-                        try:
-                            role_to_fill = roles_to_fill[random.randint(0, len(roles_to_fill) - 1)]
-                        except ValueError as e:
-                            raise e
-
-                        primary_pool = self._get_primary_pool(role_to_fill, from_player_pool=player_pool)
-                        secondary_pool = self._get_secondary_pool(role_to_fill, from_player_pool=player_pool)
-                        off_pool = self._get_off_pool(role_to_fill, from_player_pool=player_pool)
-
-                        complete_pool = primary_pool + secondary_pool + off_pool
-
-                        if len(complete_pool) == 0:
-                            raise EmptyPoolException()
-
-                    current_team_skew = team_a.get_average_team_rating() - team_b.get_average_team_rating()
-
-                    picked_matchup_with_skew = self._find_best_matchup_from_pool(complete_pool, role_to_fill)
-
-                    picked_matchup_skew = picked_matchup_with_skew[0]
-                    picked_matchup = picked_matchup_with_skew[1]
-
-                    # Start by assigning arbitrarily. We will swap if needed to account for current team skew
-                    team_a_player = picked_matchup[0]
-                    team_b_player = picked_matchup[1]
-
-                    if current_team_skew == 0:
-                        # Empty teams or evenly matched. Just use the matchup as is
-                        pass
-                    elif current_team_skew < 0:
-                        # team a is weaker. Let's make sure they get the player favoured in the matchup
-                        if picked_matchup_skew < 0:
-                            # If the matchup skew is negative that means the right player had a better ranking
-                            team_a_player, team_b_player = team_b_player, team_a_player
-                    else:
-                        # team b is weaker. Let's make sure they get the player favoured in the matchup
-                        if picked_matchup_skew > 0:
-                            # If the matchup skew is positive that means the left player had a better ranking
-                            team_a_player, team_b_player = team_b_player, team_a_player
-
-                    team_a.add_role(role_to_fill, team_a_player)
-                    team_b.add_role(role_to_fill, team_b_player)
-
-                    # Remove players from player pool and roles from roles to fill
-                    selected_players_usernames = [team_a_player.username, team_b_player.username]
-
-                    player_pool = [player for player in player_pool if
-                                   player.username not in selected_players_usernames]
-
-                    roles_to_fill = [r for r in roles_to_fill if r.value != role_to_fill.value]
+                    updated_player_pool, updated_roles_to_fill = self._matchmake(team_a, team_b, player_pool, roles_to_fill)
+                    player_pool = updated_player_pool
+                    roles_to_fill = updated_roles_to_fill
                 else:
                     # We have no more players left to matchmake. Let's check how the teams balance out
                     if abs(team_a.get_average_team_rating() - team_b.get_average_team_rating()) > delta_max:
