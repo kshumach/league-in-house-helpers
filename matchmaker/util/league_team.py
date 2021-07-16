@@ -17,7 +17,7 @@ class RoleFilledException(Exception):
 Assignments = Dict[str, Optional[User]]
 
 
-class Team:
+class LeagueTeam:
     def __init__(self):
         self._assignments: Assignments = {
             LEAGUE_ROLE.TOP.value: None,
@@ -44,13 +44,13 @@ class Team:
         if len(members) == 0:
             return 0
 
-        return sum([user.average_ranking_adjusted for user in members]) / len(members)
+        return sum([user.average_league_ranking_adjusted for user in members]) / len(members)
 
     def get_player_in_role(self, role: LEAGUE_ROLE):
         return self._assignments[role.value]
 
     def get_highest_rated_player(self):
-        return self._members().sort(key=lambda m: m.average_ranking_adjusted, reverse=True)[:1]
+        return self._members().sort(key=lambda m: m.average_league_ranking_adjusted, reverse=True)[:1]
 
     def is_team_full(self):
         return len(self._members()) == 5
@@ -63,11 +63,15 @@ class Team:
         bot = self._assignments[LEAGUE_ROLE.MARKSMAN.value]
         sup = self._assignments[LEAGUE_ROLE.SUPPORT.value]
 
-        top_rank_str = f"{top.average_ranking_adjusted} ~> {top.average_ranking_adjusted_for_role(LEAGUE_ROLE.TOP)}"
-        jng_rank_str = f"{jng.average_ranking_adjusted} ~> {jng.average_ranking_adjusted_for_role(LEAGUE_ROLE.JUNGLE)}"
-        mid_rank_str = f"{mid.average_ranking_adjusted} ~> {mid.average_ranking_adjusted_for_role(LEAGUE_ROLE.MID)}"
-        bot_rank_str = f"{bot.average_ranking_adjusted} ~> {bot.average_ranking_adjusted_for_role(LEAGUE_ROLE.MARKSMAN)}"
-        sup_rank_str = f"{sup.average_ranking_adjusted} ~> {sup.average_ranking_adjusted_for_role(LEAGUE_ROLE.SUPPORT)}"
+        top_rank_str = (
+            f"{top.average_league_ranking_adjusted} ~> {top.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.TOP)}"
+        )
+        jng_rank_str = f"{jng.average_league_ranking_adjusted} ~> {jng.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.JUNGLE)}"
+        mid_rank_str = (
+            f"{mid.average_league_ranking_adjusted} ~> {mid.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.MID)}"
+        )
+        bot_rank_str = f"{bot.average_league_ranking_adjusted} ~> {bot.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.MARKSMAN)}"
+        sup_rank_str = f"{sup.average_league_ranking_adjusted} ~> {sup.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.SUPPORT)}"
 
         return f"""
         {LEAGUE_ROLE.TOP.value}: ({top.primary_summoner_name}: {top_rank_str})" \n

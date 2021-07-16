@@ -1,5 +1,7 @@
 import enum
 
+FLOAT_ROLE = "FLOAT"
+
 
 class GAME_OPTIONS(enum.Enum):
     LEAGUE = "LEAGUE"
