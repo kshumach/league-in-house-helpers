@@ -2,7 +2,7 @@ import random
 from typing import List, Tuple
 
 from common.api.enums import GAME_OPTIONS
-from matchmaker.util.team import Team
+from matchmaker.util.league_team import LeagueTeam
 from rankings.models import DEFAULT_RANKING, RankingType
 from roles.models import LEAGUE_ROLE
 from users.models import User
@@ -39,10 +39,11 @@ class LeagueMatchMaker:
 
         self._build_starting_dataset()
 
-
     def _build_starting_dataset(self):
         for player in self._players:
-            player_rankings = player.rankings.filter(ranking_type=RankingType.objects.get(value=GAME_OPTIONS.LEAGUE.value))
+            player_rankings = player.rankings.filter(
+                ranking_type=RankingType.objects.get(value=GAME_OPTIONS.LEAGUE.value)
+            )
 
             if len(player_rankings) < 2:
                 self._player_rankings_map[player.username] = DEFAULT_RANKING
@@ -100,7 +101,7 @@ class LeagueMatchMaker:
         skew = first_user_rating - second_user_rating
 
         return skew, matchup
-    
+
     def _raise_for_unmatchable_dataset(self):
         complete_top_laner_pool = self._get_complete_pool_for_role(LEAGUE_ROLE.TOP)
         complete_jungler_pool = self._get_complete_pool_for_role(LEAGUE_ROLE.JUNGLE)
@@ -117,24 +118,25 @@ class LeagueMatchMaker:
         # Let's see if we have enough variety across all pools to make a team. We could potentially still not have
         # enough due to how things spread out but lets make sure we can even try.
         if any(
-                [
-                    not top_laner_count >= 2,
-                    not jungler_count >= 2,
-                    not mid_laner_count >= 2,
-                    not marksman_count >= 2,
-                    not support_count >= 2,
-                ]
+            [
+                not top_laner_count >= 2,
+                not jungler_count >= 2,
+                not mid_laner_count >= 2,
+                not marksman_count >= 2,
+                not support_count >= 2,
+            ]
         ):
             count_detail = f"top: {top_laner_count}, jng: {jungler_count} mid: {mid_laner_count}, adc: {marksman_count}, supp: {support_count}"
             raise UnMatchableStateException(f"Not enough players within each role to create a team. {count_detail}")
-        
+
         return None
 
     def _find_best_matchup_from_pool(self, pool: List[User], role: LEAGUE_ROLE) -> Tuple[float, Matchup]:
         matchups = self._match_pairs_from_pool(pool)
 
-        matchups_with_skew: List[Tuple[float, Matchup]] = [self._get_matchup_skew(matchup, role) for matchup in
-                                                           matchups]
+        matchups_with_skew: List[Tuple[float, Matchup]] = [
+            self._get_matchup_skew(matchup, role) for matchup in matchups
+        ]
 
         sorted_matchups_by_skew = sorted(matchups_with_skew, key=lambda m: abs(m[0]))
 
@@ -145,7 +147,10 @@ class LeagueMatchMaker:
     
     Updates teams in line, returns updated player pool and roles to fill.
     """
-    def _matchmake(self, team_a: Team, team_b: Team, player_pool: list[User], roles_to_fill: list[LEAGUE_ROLE]) -> Tuple[list[User], list[LEAGUE_ROLE]]:
+
+    def _matchmake(
+        self, team_a: LeagueTeam, team_b: LeagueTeam, player_pool: list[User], roles_to_fill: list[LEAGUE_ROLE]
+    ) -> Tuple[list[User], list[LEAGUE_ROLE]]:
         if len(player_pool) == 2:
             # Last loop, we can skip some things. We know that there is only one more role to fill
             role_to_fill = roles_to_fill[0]
@@ -199,14 +204,13 @@ class LeagueMatchMaker:
         # Remove players from player pool and roles from roles to fill
         selected_players_usernames = [team_a_player.username, team_b_player.username]
 
-        player_pool = [player for player in player_pool if
-                       player.username not in selected_players_usernames]
+        player_pool = [player for player in player_pool if player.username not in selected_players_usernames]
 
         roles_to_fill = [r for r in roles_to_fill if r.value != role_to_fill.value]
 
         return player_pool, roles_to_fill
 
-    def matchmake(self) -> Tuple[Team, Team]:
+    def matchmake(self) -> Tuple[LeagueTeam, LeagueTeam]:
         self._raise_for_unmatchable_dataset()
 
         max_attempts = 10
@@ -215,15 +219,17 @@ class LeagueMatchMaker:
         attempt = 1
 
         while attempt < max_attempts:
-            team_a = Team()
-            team_b = Team()
+            team_a = LeagueTeam()
+            team_b = LeagueTeam()
 
             roles_to_fill = [role for role in LEAGUE_ROLE]
             player_pool = self._players
 
             try:
                 while len(player_pool) > 0:
-                    updated_player_pool, updated_roles_to_fill = self._matchmake(team_a, team_b, player_pool, roles_to_fill)
+                    updated_player_pool, updated_roles_to_fill = self._matchmake(
+                        team_a, team_b, player_pool, roles_to_fill
+                    )
                     player_pool = updated_player_pool
                     roles_to_fill = updated_roles_to_fill
                 else:

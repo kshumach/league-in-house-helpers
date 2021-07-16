@@ -17,7 +17,7 @@ class RoleFilledException(Exception):
 Assignments = Dict[str, Optional[User]]
 
 
-class Team:
+class LeagueTeam:
     def __init__(self):
         self._assignments: Assignments = {
             LEAGUE_ROLE.TOP.value: None,
@@ -63,9 +63,13 @@ class Team:
         bot = self._assignments[LEAGUE_ROLE.MARKSMAN.value]
         sup = self._assignments[LEAGUE_ROLE.SUPPORT.value]
 
-        top_rank_str = f"{top.average_league_ranking_adjusted} ~> {top.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.TOP)}"
+        top_rank_str = (
+            f"{top.average_league_ranking_adjusted} ~> {top.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.TOP)}"
+        )
         jng_rank_str = f"{jng.average_league_ranking_adjusted} ~> {jng.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.JUNGLE)}"
-        mid_rank_str = f"{mid.average_league_ranking_adjusted} ~> {mid.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.MID)}"
+        mid_rank_str = (
+            f"{mid.average_league_ranking_adjusted} ~> {mid.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.MID)}"
+        )
         bot_rank_str = f"{bot.average_league_ranking_adjusted} ~> {bot.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.MARKSMAN)}"
         sup_rank_str = f"{sup.average_league_ranking_adjusted} ~> {sup.average_league_ranking_adjusted_for_role(LEAGUE_ROLE.SUPPORT)}"
 

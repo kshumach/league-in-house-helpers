@@ -6,7 +6,7 @@ from django.views.generic import FormView
 from rest_framework import status
 
 from matchmaker.util.league_matchmaker import LeagueMatchMaker, AttemptsExhaustionException
-from matchmaker.util.valorant_matchmaker import ValorantMatchmaker
+from matchmaker.util.valorant_matchmaker import ValorantMatchMaker
 
 
 class LeaguePlayerSelectorForm(forms.Form):
@@ -51,6 +51,10 @@ class ValorantPlayerSelectorForm(forms.Form):
         queryset=get_user_model().objects.filter(valorantaccount__isnull=False)
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["players"].widget.attrs.update({"style": "height: 25%;width:25%"})
+
 
 class ValorantPlayerSelectorView(FormView):
     form_class = ValorantPlayerSelectorForm
@@ -69,7 +73,7 @@ class ValorantMatchmakerView(View):
 
         players = get_user_model().objects.filter(id__in=player_ids)
 
-        matchmaker = ValorantMatchmaker(list(players))
+        matchmaker = ValorantMatchMaker(list(players))
 
         try:
             team_a, team_b = matchmaker.matchmake()
