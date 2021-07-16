@@ -24,12 +24,34 @@ class LEAGUE_ROLE(enum.Enum):
         return list(map(lambda r: (r.name, r.value), LEAGUE_ROLE))
 
 
+class VALORANT_ROLE(enum.Enum):
+    SENTINEL = "SENTINEL"
+    INITIATOR = "INITIATOR"
+    CONTROLLER = "CONTROLLER"
+    DUELIST = "DUELIST"
+
+    @staticmethod
+    def as_tuple_list():
+        return list(map(lambda r: (r.name, r.value), VALORANT_ROLE))
+
+
 class LeagueRole(models.Model):
     value = models.CharField(max_length=16, choices=LEAGUE_ROLE.as_tuple_list())
 
 
+class ValorantRole(models.Model):
+    value = models.CharField(max_length=16, choices=VALORANT_ROLE.as_tuple_list())
+
+
 class UserLeagueRolePreference(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="role_preferences", on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="league_role_preferences", on_delete=models.CASCADE)
     primary_role = models.ForeignKey(LeagueRole, related_name="primary_preferences", null=True, on_delete=models.SET_NULL)
     secondary_role = models.ForeignKey(LeagueRole, related_name="secondary_preferences", null=True, on_delete=models.SET_NULL)
     off_role = models.ForeignKey(LeagueRole, related_name="off_role_preferences", null=True, on_delete=models.SET_NULL)
+
+
+class UserValorantRolePreference(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="valorant_role_preferences", on_delete=models.CASCADE)
+    primary_role = models.ForeignKey(ValorantRole, related_name="primary_preferences", null=True, on_delete=models.SET_NULL)
+    secondary_role = models.ForeignKey(ValorantRole, related_name="secondary_preferences", null=True, on_delete=models.SET_NULL)
+    off_role = models.ForeignKey(ValorantRole, related_name="off_role_preferences", null=True, on_delete=models.SET_NULL)

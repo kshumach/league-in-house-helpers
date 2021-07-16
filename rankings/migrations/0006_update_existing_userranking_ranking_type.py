@@ -1,5 +1,7 @@
 from django.db import migrations
-from rankings.models import RANKING_TYPE, RankingType
+
+from common.api.enums import GAME_OPTIONS
+from rankings.models import RankingType
 
 
 def add_default_user_ranking_type(apps, schema_editor):
@@ -8,7 +10,7 @@ def add_default_user_ranking_type(apps, schema_editor):
 
     model = apps.get_model("rankings", "UserRanking")
 
-    default_ranking = RankingType.objects.get(value=RANKING_TYPE.LEAGUE.value)
+    default_ranking = RankingType.objects.get(value=GAME_OPTIONS.LEAGUE.value)
 
     model.objects.all().update(ranking_type=default_ranking)
 

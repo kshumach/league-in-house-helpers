@@ -100,15 +100,15 @@ class User(AbstractUser):
             filtered_ratings = [ranking for ranking in rankings if (upper_bound >= ranking >= lower_bound)]
             return round(sum(filtered_ratings) / len(filtered_ratings), 2)
 
-    def preference_for_role(self, role: LEAGUE_ROLE):
+    def preference_for_league_role(self, role: LEAGUE_ROLE):
         if not hasattr(self, 'role_preferences'):
             return None
 
-        if self.role_preferences.primary_role.value == role.value:
+        if self.league_role_preferences.primary_role.value == role.value:
             role_type_for_user = "primary"
-        elif self.role_preferences.secondary_role.value == role.value:
+        elif self.league_role_preferences.secondary_role.value == role.value:
             role_type_for_user = "secondary"
-        elif self.role_preferences.off_role.value == role.value:
+        elif self.league_role_preferences.off_role.value == role.value:
             role_type_for_user = "off"
         else:
             role_type_for_user = None
@@ -116,4 +116,4 @@ class User(AbstractUser):
         return role_type_for_user
 
     def average_ranking_adjusted_for_role(self, role: LEAGUE_ROLE):
-        return round(self.average_ranking_adjusted * ROLE_MULTIPLIER[self.preference_for_role(role)], 1)
+        return round(self.average_ranking_adjusted * ROLE_MULTIPLIER[self.preference_for_league_role(role)], 1)

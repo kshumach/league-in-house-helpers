@@ -5,7 +5,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 
 from rankings.api.serializers import UserRankingsReadSerializer
-from roles.api.serializers import UserLeagueRolePreferenceReadSerializer
+from roles.api.serializers import UserLeagueRolePreferenceReadSerializer, UserValorantRolePreferenceReadSerializer
 from summoners.api.serializers import SummonerReadSerializer
 from valorant_accounts.api.serializers import ValorantAccountReadSerializer
 
@@ -45,25 +45,27 @@ class UserWriteSerializer(serializers.ModelSerializer):
 
 
 class UserReadSerializer(serializers.ModelSerializer):
-    preferred_roles = UserLeagueRolePreferenceReadSerializer(source="role_preferences")
+    preferred_roles_league = UserLeagueRolePreferenceReadSerializer(source="league_role_preferences")
+    preferred_roles_valorant = UserValorantRolePreferenceReadSerializer(source="valorant_role_preferences")
     summoners = SummonerReadSerializer(many=True, source="summoner_set")
     ranking_ballots = UserRankingsReadSerializer(many=True)
     valorant_accounts = ValorantAccountReadSerializer(many=True, source="valorantaccount_set")
 
     class Meta:
         model = get_user_model()
-        fields = ["id", "preferred_roles", "summoners", "ranking_ballots", "valorant_accounts"]
+        fields = ["id", "preferred_roles_league", "preferred_roles_valorant", "summoners", "ranking_ballots", "valorant_accounts"]
 
 
 class UserListSerializer(serializers.ModelSerializer):
     summoners = SummonerReadSerializer(many=True, source="summoner_set")
     valorant_accounts = ValorantAccountReadSerializer(many=True, source="valorantaccount_set")
-    preferred_roles = UserLeagueRolePreferenceReadSerializer(source="role_preferences")
+    preferred_roles_league = UserLeagueRolePreferenceReadSerializer(source="league_role_preferences")
+    preferred_roles_valorant = UserValorantRolePreferenceReadSerializer(source="valorant_role_preferences")
     ranking_ballots = UserRankingsReadSerializer(many=True)
 
     class Meta:
         model = get_user_model()
-        fields = ["id", "username", "summoners", "preferred_roles", "ranking_ballots", "valorant_accounts"]
+        fields = ["id", "username", "summoners", "preferred_roles_league", "preferred_roles_valorant", "ranking_ballots", "valorant_accounts"]
 
 
 class PasswordChangeSerializer(serializers.Serializer):

@@ -58,17 +58,17 @@ class MatchMaker:
     def _get_primary_pool(self, role: LEAGUE_ROLE, from_player_pool=None) -> List[User]:
         player_pool = self._players if from_player_pool is None else from_player_pool
 
-        return [player for player in player_pool if player.role_preferences.primary_role.value == role.value]
+        return [player for player in player_pool if player.league_role_preferences.primary_role.value == role.value]
 
     def _get_secondary_pool(self, role: LEAGUE_ROLE, from_player_pool=None) -> List[User]:
         player_pool = self._players if from_player_pool is None else from_player_pool
 
-        return [player for player in player_pool if player.role_preferences.secondary_role.value == role.value]
+        return [player for player in player_pool if player.league_role_preferences.secondary_role.value == role.value]
 
     def _get_off_pool(self, role: LEAGUE_ROLE, from_player_pool=None) -> List[User]:
         player_pool = self._players if from_player_pool is None else from_player_pool
 
-        return [player for player in player_pool if player.role_preferences.off_role.value == role.value]
+        return [player for player in player_pool if player.league_role_preferences.off_role.value == role.value]
 
     def _get_ranking(self, user: User):
         return self._player_rankings_map[user.username]

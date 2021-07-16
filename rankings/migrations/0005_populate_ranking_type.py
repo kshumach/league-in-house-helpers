@@ -1,5 +1,5 @@
 from django.db import migrations
-from rankings.models import RANKING_TYPE
+from rankings.models import GAME_OPTIONS
 
 
 def populate_ranking_type(apps, schema_editor):
@@ -8,9 +8,9 @@ def populate_ranking_type(apps, schema_editor):
 
     model = apps.get_model("rankings", "RankingType")
 
-    for ranking_type in RANKING_TYPE:
-        new_ranking = model.objects.create(value=ranking_type.value)
-        new_ranking.save()
+    for ranking_type in GAME_OPTIONS:
+        new_ranking_type = model.objects.create(value=ranking_type.value)
+        new_ranking_type.save()
 
 
 class Migration(migrations.Migration):

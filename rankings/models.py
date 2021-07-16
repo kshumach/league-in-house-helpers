@@ -3,6 +3,8 @@ import enum
 from django.conf import settings
 from django.db import models
 
+from common.api.enums import GAME_OPTIONS
+
 
 class RANKING(enum.Enum):
     S = "S"
@@ -14,15 +16,6 @@ class RANKING(enum.Enum):
     @staticmethod
     def as_tuple_list():
         return list(map(lambda r: (r.name, r.value), RANKING))
-
-
-class RANKING_TYPE(enum.Enum):
-    LEAGUE = "LEAGUE"
-    VALORANT = "VALORANT"
-
-    @staticmethod
-    def as_tuple_list():
-        return list(map(lambda r: (r.name, r.value), RANKING_TYPE))
 
 
 RANKING_WEIGHT = {
@@ -46,7 +39,7 @@ DEFAULT_RANKING = 4
 
 
 class RankingType(models.Model):
-    value = models.CharField(max_length=20, choices=RANKING_TYPE.as_tuple_list())
+    value = models.CharField(max_length=20, choices=GAME_OPTIONS.as_tuple_list())
 
 
 class Ranking(models.Model):
