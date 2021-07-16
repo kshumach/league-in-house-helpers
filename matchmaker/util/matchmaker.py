@@ -3,7 +3,7 @@ from typing import List, Tuple, Union
 
 from matchmaker.util.team import Team
 from rankings.models import DEFAULT_RANKING
-from roles.models import ROLE, ROLE_MULTIPLIER
+from roles.models import LEAGUE_ROLE, ROLE_MULTIPLIER
 from users.models import User
 
 
@@ -48,27 +48,27 @@ class MatchMaker:
             else:
                 self._player_rankings_map[player.username] = player.average_ranking_adjusted
 
-    def _get_complete_pool_for_role(self, role: ROLE, from_player_pool=None) -> List[User]:
+    def _get_complete_pool_for_role(self, role: LEAGUE_ROLE, from_player_pool=None) -> List[User]:
         primary_pool = self._get_primary_pool(role, from_player_pool=from_player_pool)
         secondary_pool = self._get_secondary_pool(role, from_player_pool=from_player_pool)
         off_pool = self._get_off_pool(role, from_player_pool=from_player_pool)
 
         return primary_pool + secondary_pool + off_pool
 
-    def _get_primary_pool(self, role: ROLE, from_player_pool=None) -> List[User]:
+    def _get_primary_pool(self, role: LEAGUE_ROLE, from_player_pool=None) -> List[User]:
         player_pool = self._players if from_player_pool is None else from_player_pool
 
-        return [player for player in player_pool if player.role_preferences.primary_role.value == role.value]
+        return [player for player in player_pool if player.league_role_preferences.primary_role.value == role.value]
 
-    def _get_secondary_pool(self, role: ROLE, from_player_pool=None) -> List[User]:
+    def _get_secondary_pool(self, role: LEAGUE_ROLE, from_player_pool=None) -> List[User]:
         player_pool = self._players if from_player_pool is None else from_player_pool
 
-        return [player for player in player_pool if player.role_preferences.secondary_role.value == role.value]
+        return [player for player in player_pool if player.league_role_preferences.secondary_role.value == role.value]
 
-    def _get_off_pool(self, role: ROLE, from_player_pool=None) -> List[User]:
+    def _get_off_pool(self, role: LEAGUE_ROLE, from_player_pool=None) -> List[User]:
         player_pool = self._players if from_player_pool is None else from_player_pool
 
-        return [player for player in player_pool if player.role_preferences.off_role.value == role.value]
+        return [player for player in player_pool if player.league_role_preferences.off_role.value == role.value]
 
     def _get_ranking(self, user: User):
         return self._player_rankings_map[user.username]
@@ -92,7 +92,7 @@ class MatchMaker:
     Return a tuple of the difference and the User that has the higher ranking.
     """
 
-    def _get_matchup_skew(self, matchup: Matchup, role: ROLE) -> Tuple[float, Matchup]:
+    def _get_matchup_skew(self, matchup: Matchup, role: LEAGUE_ROLE) -> Tuple[float, Matchup]:
         first_user_rating = matchup[0].average_ranking_adjusted_for_role(role)
         second_user_rating = matchup[1].average_ranking_adjusted_for_role(role)
 
@@ -101,11 +101,11 @@ class MatchMaker:
         return skew, matchup
     
     def _raise_for_unmatchable_dataset(self):
-        complete_top_laner_pool = self._get_complete_pool_for_role(ROLE.TOP)
-        complete_jungler_pool = self._get_complete_pool_for_role(ROLE.JUNGLE)
-        complete_mid_laner_pool = self._get_complete_pool_for_role(ROLE.MID)
-        complete_marksman_pool = self._get_complete_pool_for_role(ROLE.MARKSMAN)
-        complete_support_pool = self._get_complete_pool_for_role(ROLE.SUPPORT)
+        complete_top_laner_pool = self._get_complete_pool_for_role(LEAGUE_ROLE.TOP)
+        complete_jungler_pool = self._get_complete_pool_for_role(LEAGUE_ROLE.JUNGLE)
+        complete_mid_laner_pool = self._get_complete_pool_for_role(LEAGUE_ROLE.MID)
+        complete_marksman_pool = self._get_complete_pool_for_role(LEAGUE_ROLE.MARKSMAN)
+        complete_support_pool = self._get_complete_pool_for_role(LEAGUE_ROLE.SUPPORT)
 
         top_laner_count = len(complete_top_laner_pool)
         jungler_count = len(complete_jungler_pool)
@@ -129,7 +129,7 @@ class MatchMaker:
         
         return None
 
-    def _find_best_matchup_from_pool(self, pool: List[User], role: ROLE) -> Tuple[float, Matchup]:
+    def _find_best_matchup_from_pool(self, pool: List[User], role: LEAGUE_ROLE) -> Tuple[float, Matchup]:
         matchups = self._match_pairs_from_pool(pool)
 
         matchups_with_skew: List[Tuple[float, Matchup]] = [self._get_matchup_skew(matchup, role) for matchup in
@@ -151,7 +151,7 @@ class MatchMaker:
             team_a = Team()
             team_b = Team()
 
-            roles_to_fill = [role for role in ROLE]
+            roles_to_fill = [role for role in LEAGUE_ROLE]
             player_pool = self._players
 
             try:

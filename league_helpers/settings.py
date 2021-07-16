@@ -83,7 +83,8 @@ INSTALLED_APPS = [
     "summoners",
     "rankings",
     "roles",
-    "matchmaker"
+    "matchmaker",
+    "valorant_accounts"
 ]
 
 MIDDLEWARE = [

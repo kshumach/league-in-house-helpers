@@ -5,4 +5,5 @@ urlpatterns = [
     path("summoners/", include(("summoners.api.urls", "summoners"), namespace="summoners_api")),
     path("roles/", include(("roles.api.urls", "roles"), namespace="roles_api")),
     path("rankings/", include(("rankings.api.urls", "rankings"), namespace="rankings_api")),
+    path("valorant-accounts/", include(("valorant_accounts.api.urls", "rankings"), namespace="valorant_accounts_api")),
 ]
