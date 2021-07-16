@@ -5,7 +5,7 @@ from rest_framework.generics import UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from rankings.api.serializers import UserRankingsWriteSerializer
-from rankings.models import UserRanking
+from rankings.models import UserRanking, RankingType
 
 
 class UserRankingsUpdateView(UpdateAPIView):
@@ -15,7 +15,8 @@ class UserRankingsUpdateView(UpdateAPIView):
     def get_object(self):
         try:
             target_user = get_user_model().objects.get(id=self.request.data["user_id"])
-            return UserRanking.objects.get(rated_by=self.request.user.id, user=target_user)
+            ranking_type = RankingType.objects.get(value=self.request.data["ranking_type"])
+            return UserRanking.objects.get(rated_by=self.request.user.id, user=target_user, ranking_type=ranking_type)
         except ObjectDoesNotExist:
             return None
 

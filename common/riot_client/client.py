@@ -36,7 +36,7 @@ class RiotClient:
     def _make_request(self, method: str, path: str, **kwargs) -> Optional[dict]:
         request_func = getattr(self._session, method.lower())
 
-        overrides = kwargs.pop("overrides") if "overrides" in kwargs else None
+        overrides = kwargs.pop("overrides") if "overrides" in kwargs else {}
 
         routing_region = overrides["routing_region"] if "routing_region" in overrides else self._default_routing_region
 
